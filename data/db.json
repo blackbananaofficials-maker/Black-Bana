@@ -1,0 +1,103 @@
+{
+  "admins": [
+    {
+      "username": "sarah.johnson@example.com",
+      "password": "123123"
+    },
+    {
+      "username": "sarah.johnson@example.comjjj",
+      "password": "123123"
+    },
+    {
+      "username": "admin@bb.com",
+      "password": "password"
+    },
+    {
+      "username": "newuser@test.com",
+      "password": "password123"
+    },
+    {
+      "username": "yug.rojivadiya@gmail.com",
+      "password": "123123"
+    },
+    {
+      "username": "mayankprajapat010@gmail.com",
+      "password": "123123"
+    }
+  ],
+  "projects": [
+    {
+      "type": "UGC",
+      "title": "Fashion Week",
+      "media": "https://assets.mixkit.co/videos/preview/mixkit-young-woman-recording-a-video-on-her-phone-39739-large.mp4",
+      "isVideo": true
+    },
+    {
+      "type": "Production",
+      "title": "Night Life",
+      "media": "https://assets.mixkit.co/videos/preview/mixkit-fireworks-illuminating-the-beach-at-night-4168-large.mp4",
+      "isVideo": true
+    },
+    {
+      "type": "Influencer",
+      "title": "Neon Dance",
+      "media": "https://assets.mixkit.co/videos/preview/mixkit-man-dancing-under-changing-lights-1240-large.mp4",
+      "isVideo": true
+    },
+    {
+      "type": "Branding",
+      "title": "Fluid Identity",
+      "media": "https://video.wixstatic.com/video/11062b_92619c730c4b4b0bb27ea39c4276a53b/1080p/mp4/file.mp4",
+      "isVideo": true
+    },
+    {
+      "type": "CGI",
+      "title": "Cosmos",
+      "media": "https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4",
+      "isVideo": true
+    }
+  ],
+  "reviews": [
+    {
+      "name": "Krutarth Kansagra",
+      "role": "CEO, Edverb",
+      "text": "Black Banana isn't an agency, they are a weapon. Our conversion rate doubled in 30 days.",
+      "rating": 5
+    },
+    {
+      "name": "Rajesh Shah",
+      "role": "CMO, VibeDrink",
+      "text": "The visual identity they created for us is iconic. We consistently get asked who built our site.",
+      "rating": 5
+    },
+    {
+      "name": "Amit Sharma",
+      "role": "Founder, GearUp",
+      "text": "Professional, fast, and incredibly talented. The best investment we made this year.",
+      "rating": 5
+    }
+  ],
+  "expertise": [
+    {
+      "code": "WEB",
+      "title": "Development",
+      "desc": "High-performance and responsive websites.",
+      "img": "website.jpg"
+    },
+    {
+      "code": "MOV",
+      "title": "Ads",
+      "desc": "Running Meta ads",
+      "img": "metaad.jpg"
+    }
+  ],
+  "messages": [
+    {
+      "id": 1771044930338,
+      "name": "Test User",
+      "email": "test@user.com",
+      "message": "Hello World",
+      "date": "2026-02-14T04:55:30.338Z"
+    }
+  ]
+}

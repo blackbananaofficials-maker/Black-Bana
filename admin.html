@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACK BANANA | Admin Console</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/png" href="logo_head.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        body: ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        bb: {
+                            black: '#050505',
+                            gold: '#F59E0B',
+                            charcoal: '#0F0F0F',
+                            glass: 'rgba(255, 255, 255, 0.05)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .reactor-card {
+            background: #0F0F0F;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .reactor-card:hover {
+            transform: translateY(-5px);
+            border-color: #F59E0B;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 10px rgba(245, 158, 11, 0.1);
+        }
+
+        .cyber-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .cyber-pill:hover {
+            border-color: #F59E0B;
+            color: #F59E0B;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        /* CUSTOM CLOSE BUTTON ANIMATION */
+        .animated-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .animated-close .close-line {
+            width: 24px;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.5);
+            position: absolute;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Initial State: Only one line visible (the other is scaled to 0 or hidden) */
+        .animated-close .line-1 {
+            transform: translateY(0) rotate(0);
+            width: 20px;
+        }
+
+        .animated-close .line-2 {
+            transform: translateY(0) rotate(0);
+            width: 0px;
+            opacity: 0;
+            background-color: #F59E0B;
+        }
+
+        /* Hover State: Transform into an X */
+        .animated-close:hover .line-1 {
+            transform: rotate(45deg);
+            background-color: #F59E0B;
+            width: 24px;
+        }
+
+        .animated-close:hover .line-2 {
+            opacity: 1;
+            transform: rotate(-45deg);
+            width: 24px;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-bb-gold selection:text-bb-black min-h-screen flex flex-col">
+
+    <!-- NAV -->
+    <nav
+        class="fixed top-0 w-full p-6 md:p-8 flex justify-between items-center z-50 bg-[#050505]/80 backdrop-blur-md border-b border-white/5">
+        <div class="flex items-center gap-4">
+            <a href="blackbanana.html" class="block w-32 md:w-32 hover:opacity-80 transition-opacity">
+                <img src="logo_navbar.png" alt="Black Banana">
+            </a>
+            <span
+                class="px-3 py-1 bg-bb-gold/10 border border-bb-gold text-bb-gold text-[10px] font-bold uppercase tracking-widest rounded-full">Admin
+                Console</span>
+        </div>
+        <div class="flex gap-4 items-center">
+            <button onclick="BB_DB.logout()"
+                class="hidden md:block text-white/40 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors">
+                Logout
+            </button>
+            <a href="blackbanana.html"
+                class="hidden md:block px-6 py-2 border border-white/20 rounded-full hover:bg-white hover:text-black transition-all uppercase text-xs font-bold tracking-widest">
+                Back to Site
+            </a>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow pt-32 px-6 md:px-16 container mx-auto">
+
+        <div class="mb-12 flex justify-between items-end">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-bold uppercase mb-2">Dashboard</h1>
+                <p class="text-white/40 font-body">Welcome back, Administrator.</p>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="openModal('project')"
+                    class="cyber-pill px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider bg-bb-gold text-black border-bb-gold hover:bg-white hover:text-black">
+                    + New Masterpiece
+                </button>
+            </div>
+        </div>
+
+        <!-- STATS ROW -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="reactor-card p-6">
+                <p class="text-xs uppercase tracking-widest text-white/40 mb-2">Total Masterpieces</p>
+                <div class="text-3xl font-bold text-white" id="stat-projects">0</div>
+            </div>
+            <div class="reactor-card p-6">
+                <p class="text-xs uppercase tracking-widest text-white/40 mb-2">Client Reviews</p>
+                <div class="text-3xl font-bold text-white" id="stat-reviews">0</div>
+            </div>
+            <div class="reactor-card p-6">
+                <p class="text-xs uppercase tracking-widest text-white/40 mb-2">Total Services</p>
+                <div class="text-3xl font-bold text-white" id="stat-expertise">0</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+
+            <!-- REVIEWS LIST -->
+            <div class="reactor-card p-8">
+                <h2 class="text-xl font-bold uppercase mb-6 flex justify-between items-center">
+                    Client Feedback
+                    <a href="feedback.html"
+                        class="text-[10px] text-bb-gold border border-bb-gold/30 px-3 py-1 rounded-full hover:bg-bb-gold hover:text-black transition-colors">
+                        + Manual Entry
+                    </a>
+                </h2>
+                <div class="overflow-y-auto max-h-[400px] space-y-4 no-scrollbar" id="reviews-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- PROJECTS LIST (Mini) -->
+            <div class="reactor-card p-8">
+                <h2 class="text-xl font-bold uppercase mb-6">Recent Masterpieces</h2>
+                <div class="overflow-y-auto max-h-[400px] space-y-2 no-scrollbar" id="projects-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <!-- EXPERTISE LIST -->
+            <div class="reactor-card p-8">
+                <h2 class="text-xl font-bold uppercase mb-6 flex justify-between items-center">
+                    Services / Expertise
+                    <button onclick="openModal('expertise')"
+                        class="text-[10px] text-bb-gold border border-bb-gold/30 px-3 py-1 rounded-full hover:bg-bb-gold hover:text-black transition-colors">
+                        + New Service
+                    </button>
+                </h2>
+                <div class="overflow-y-auto max-h-[400px] space-y-4 no-scrollbar" id="expertise-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ADD ITEM MODAL -->
+    <div id="addItemModal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()">
+        </div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0F0F0F] border border-white/10 p-8 rounded-2xl shadow-2xl overflow-hidden relative">
+
+            <!-- Animated Close Button -->
+            <div class="animated-close" onclick="closeModal()">
+                <div class="close-line line-1"></div>
+                <div class="close-line line-2"></div>
+            </div>
+
+            <h2 class="text-2xl font-bold uppercase mb-6" id="modal-title">Add Item</h2>
+            <form onsubmit="handleNewItem(event)" class="space-y-4" id="item-form">
+                <input type="hidden" id="item-category" value="project">
+
+                <!-- Common Title -->
+                <input type="text" id="p-title" placeholder="Title"
+                    class="w-full bg-white/5 border border-white/10 p-3 rounded text-white focus:border-bb-gold outline-none"
+                    required>
+
+                <!-- Project Specific -->
+                <div id="project-fields" class="space-y-4">
+                    <select id="p-type"
+                        class="w-full bg-white/5 border border-white/10 p-3 rounded text-white focus:border-bb-gold outline-none">
+                        <option class="bg-black text-white" value="UGC">UGC</option>
+                        <option class="bg-black text-white" value="Production">Production</option>
+                        <option class="bg-black text-white" value="Influencer">Influencer</option>
+                        <option class="bg-black text-white" value="Branding">Branding</option>
+                        <option class="bg-black text-white" value="CGI">CGI</option>
+                    </select>
+                    <!-- Media Input Toggle -->
+                    <div class="flex gap-2 mb-2 p-1 bg-white/5 rounded">
+                        <button type="button" id="btn-url"
+                            class="flex-1 py-1 text-xs uppercase font-bold bg-bb-gold text-black rounded"
+                            onclick="toggleInput('url')">URL</button>
+                        <button type="button" id="btn-file"
+                            class="flex-1 py-1 text-xs uppercase font-bold text-white/40 hover:text-white"
+                            onclick="toggleInput('file')">Upload</button>
+                    </div>
+
+                    <input type="url" id="p-media-url" placeholder="Video URL (mp4)"
+                        class="w-full bg-white/5 border border-white/10 p-3 rounded text-white focus:border-bb-gold outline-none">
+
+                    <div id="p-media-file-container" class="hidden">
+                        <label
+                            class="block w-full border-2 border-dashed border-white/20 p-4 text-center rounded cursor-pointer hover:border-bb-gold hover:bg-white/5 transition-all">
+                            <input type="file" id="p-media-file" accept="video/*,image/*" class="hidden"
+                                onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'Drop video here'">
+                            <span class="text-bb-gold text-xl block mb-1">↑</span>
+                            <span id="file-name" class="text-xs uppercase text-white/60">Drop video here</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Expertise Specific -->
+                <div id="expertise-fields" class="space-y-4 hidden">
+                    <input type="text" id="e-desc" placeholder="Description"
+                        class="w-full bg-white/5 border border-white/10 p-3 rounded text-white focus:border-bb-gold outline-none">
+                    <input type="text" id="e-code" placeholder="Code (e.g., 01)"
+                        class="w-full bg-white/5 border border-white/10 p-3 rounded text-white focus:border-bb-gold outline-none">
+                    <textarea id="e-icon" placeholder="SVG Icon Code" rows="3"
+                        class="w-full bg-white/5 border border-white/10 p-3 rounded text-white focus:border-bb-gold outline-none font-mono text-xs"></textarea>
+                </div>
+
+                <button type="submit" id="submit-btn"
+                    class="w-full py-3 bg-bb-gold text-black font-bold uppercase rounded hover:bg-white transition-colors">
+                    Add Item
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-8 right-8 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- SCRIPT -->
+    <script src="script.js"></script>
+    <script>
+        // NOTIFICATION SYSTEM
+        function showNotification(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const borderColor = type === 'success' ? 'border-bb-gold' : 'border-red-500';
+            const icon = type === 'success' ? '✓' : '✕';
+
+            toast.className = `px-6 py-4 bg-[#0F0F0F] border-l-4 ${borderColor} text-white shadow-2xl rounded flex items-center gap-4 transform translate-y-10 opacity-0 transition-all duration-300 min-w-[300px] pointer-events-auto`;
+            toast.innerHTML = `
+                <div class="font-bold text-lg">${icon}</div>
+                <div>
+                    <div class="font-bold uppercase tracking-wider text-xs opacity-60">${type}</div>
+                    <div class="text-sm font-medium">${msg}</div>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            });
+
+            // Remove after 3s
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // TOGGLE INPUT MODE
+        let inputMode = 'url';
+        function toggleInput(mode) {
+            inputMode = mode;
+            if (mode === 'url') {
+                document.getElementById('p-media-url').classList.remove('hidden');
+                document.getElementById('p-media-file-container').classList.add('hidden');
+                document.getElementById('btn-url').className = "flex-1 py-1 text-xs uppercase font-bold bg-bb-gold text-black rounded";
+                document.getElementById('btn-file').className = "flex-1 py-1 text-xs uppercase font-bold text-white/40 hover:text-white";
+            } else {
+                document.getElementById('p-media-url').classList.add('hidden');
+                document.getElementById('p-media-file-container').classList.remove('hidden');
+                document.getElementById('btn-file').className = "flex-1 py-1 text-xs uppercase font-bold bg-bb-gold text-black rounded";
+                document.getElementById('btn-url').className = "flex-1 py-1 text-xs uppercase font-bold text-white/40 hover:text-white";
+            }
+        }
+
+        // OPEN MODAL
+        function openModal(type) {
+            document.getElementById('addItemModal').classList.remove('hidden');
+            document.getElementById('item-category').value = type;
+            document.getElementById('modal-title').innerText = type === 'project' ? 'Add Masterpiece' : 'Add Service';
+            document.getElementById('submit-btn').innerText = type === 'project' ? 'Add Project' : 'Add Service';
+
+            if (type === 'project') {
+                document.getElementById('project-fields').classList.remove('hidden');
+                document.getElementById('expertise-fields').classList.add('hidden');
+            } else {
+                document.getElementById('project-fields').classList.add('hidden');
+                document.getElementById('expertise-fields').classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('addItemModal').classList.add('hidden');
+            document.getElementById('item-form').reset();
+            resetBtn();
+        }
+
+        // RENDER ADMIN DATA
+        async function renderAdmin() {
+            // AUTH CHECK
+            BB_DB.checkAuth();
+
+            const projects = await BB_DB.getProjects();
+            const reviews = await BB_DB.getReviews();
+            const expertise = await BB_DB.getExpertise();
+
+            // Stats
+            document.getElementById('stat-projects').innerText = projects.length;
+            document.getElementById('stat-reviews').innerText = reviews.length;
+            document.getElementById('stat-expertise').innerText = expertise.length;
+
+            // Reviews List
+            const reviewContainer = document.getElementById('reviews-list');
+            reviewContainer.innerHTML = reviews.map((r, idx) => `
+                <div class="p-4 bg-white/5 rounded-lg border border-white/5 group hover:border-bb-gold transition-colors relative">
+                    <button onclick="deleteReview(${idx})" class="absolute top-4 right-4 text-white/20 hover:text-red-500 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                    <div class="flex justify-between items-start mb-2 pr-8">
+                        <div class="font-bold text-white">${r.name}</div>
+                        <div class="text-bb-gold text-xs">★ ${r.rating}</div>
+                    </div>
+                    <div class="text-white/40 text-xs mb-2">${r.role}</div>
+                    <p class="text-white/70 text-sm">"${r.text}"</p>
+                </div>
+            `).join('');
+
+            // Projects List
+            const projectContainer = document.getElementById('projects-list');
+            projectContainer.innerHTML = projects.map((p, idx) => `
+                <div class="p-3 bg-white/5 rounded border border-white/5 flex justify-between items-center group hover:border-bb-gold transition-colors">
+                    <div>
+                        <div class="font-bold text-sm text-white">${p.title}</div>
+                        <div class="text-xs text-white/40">${p.type}</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                         <div class="text-xs px-2 py-1 bg-bb-gold/10 text-bb-gold rounded">Active</div>
+                         <button onclick="deleteProject(${idx})" class="text-white/20 hover:text-red-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Expertise List
+            const expertiseContainer = document.getElementById('expertise-list');
+            expertiseContainer.innerHTML = expertise.map((e, idx) => `
+                <div class="p-3 bg-white/5 rounded border border-white/5 flex justify-between items-center group hover:border-bb-gold transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 flex items-center justify-center bg-white/5 rounded text-bb-gold">${e.code}</div>
+                        <div>
+                            <div class="font-bold text-sm text-white">${e.title}</div>
+                            <div class="text-xs text-white/40 truncate max-w-[150px]">${e.desc}</div>
+                        </div>
+                    </div>
+                    <button onclick="deleteExpertise(${idx})" class="text-white/20 hover:text-red-500 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function deleteProject(index) {
+            if (confirm('Are you sure you want to delete this Masterpiece?')) {
+                await BB_DB.deleteProject(index);
+                renderAdmin();
+                showNotification('Masterpiece deleted successfully', 'deleted');
+            }
+        }
+
+        async function deleteReview(index) {
+            if (confirm('Are you sure you want to delete this Review?')) {
+                await BB_DB.deleteReview(index);
+                renderAdmin();
+                showNotification('Review deleted successfully', 'deleted');
+            }
+        }
+
+        async function deleteExpertise(index) {
+            if (confirm('Are you sure you want to delete this Service?')) {
+                await BB_DB.deleteExpertise(index);
+                renderAdmin();
+                showNotification('Service deleted successfully', 'deleted');
+            }
+        }
+
+        async function handleNewItem(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerText = "Processing...";
+            submitBtn.disabled = true;
+
+            const category = document.getElementById('item-category').value;
+            const title = document.getElementById('p-title').value;
+
+            try {
+                if (category === 'project') {
+                    const type = document.getElementById('p-type').value;
+                    let media = '';
+
+                    if (inputMode === 'url') {
+                        media = document.getElementById('p-media-url').value;
+                        if (!media) throw new Error('Please enter a URL');
+                    } else {
+                        const fileInput = document.getElementById('p-media-file');
+                        if (fileInput.files.length === 0) throw new Error('Please select a file');
+                        const file = fileInput.files[0];
+                        if (file.size > 3000000 && !confirm("Large file (>3MB). Continue?")) {
+                            resetBtn(); return;
+                        }
+                        media = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve(e.target.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                        });
+                    }
+
+                    await BB_DB.addProject({ type, title, media, isVideo: true });
+                    showNotification('Masterpiece added successfully', 'success');
+
+                } else if (category === 'expertise') {
+                    const desc = document.getElementById('e-desc').value;
+                    const code = document.getElementById('e-code').value;
+                    const icon = document.getElementById('e-icon').value;
+
+                    await BB_DB.addExpertise({ title, desc, code, icon });
+                    showNotification('Service added successfully', 'success');
+                }
+
+                closeModal();
+                renderAdmin();
+
+            } catch (err) {
+                showNotification(err.message || 'Error occurred', 'error');
+                console.error(err);
+            }
+            resetBtn();
+        }
+
+        function resetBtn() {
+            const category = document.getElementById('item-category').value;
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerText = category === 'project' ? 'Add Project' : 'Add Service';
+            submitBtn.disabled = false;
+        }
+
+        // Init
+        window.addEventListener('load', renderAdmin);
+
+    </script>
+
+    <footer class="mt-12 py-8 border-t border-white/10 text-center text-white/20 text-xs uppercase tracking-widest">
+        &copy; 2024 Black Banana Admin System v1.0
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACK BANANA | Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="icon" type="image/png" href="logo_head.png">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Space Grotesk', 'sans-serif'] },
+                    colors: { bb: { gold: '#F59E0B' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* CUSTOM CLOSE BUTTON ANIMATION */
+        .animated-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .animated-close .close-line {
+            width: 24px;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.5);
+            position: absolute;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Initial State: Only one line visible */
+        .animated-close .line-1 {
+            transform: translateY(0) rotate(0);
+            width: 20px;
+        }
+
+        .animated-close .line-2 {
+            transform: translateY(0) rotate(0);
+            width: 0px;
+            opacity: 0;
+            background-color: #F59E0B;
+        }
+
+        /* Hover State: Transform into an X */
+        .animated-close:hover .line-1 {
+            transform: rotate(45deg);
+            background-color: #F59E0B;
+            width: 24px;
+        }
+
+        .animated-close:hover .line-2 {
+            opacity: 1;
+            transform: rotate(-45deg);
+            width: 24px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-[#0F0F0F] border border-white/10 p-8 rounded-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-bb-gold/10 rounded-full blur-[50px]"></div>
+
+        <!-- Animated Close Button (Returns to Main Site) -->
+        <a href="blackbanana.html" class="animated-close">
+            <div class="close-line line-1"></div>
+            <div class="close-line line-2"></div>
+        </a>
+
+        <div class="text-center mb-8">
+            <img src="logo_navbar.png" alt="Black Banana" class="h-8 mx-auto mb-6">
+            <h1 class="text-2xl font-bold uppercase mb-2">Restricted Access</h1>
+            <p class="text-white/40 text-sm">System credentials required.</p>
+        </div>
+
+        <form onsubmit="handleAuth(event)" class="space-y-4 relative z-10">
+            <!-- Toggles -->
+            <div class="flex bg-white/5 p-1 rounded mb-6">
+                <button type="button" id="tab-login" onclick="switchTab('login')"
+                    class="flex-1 py-2 text-xs font-bold uppercase rounded bg-bb-gold text-black transition-all">Login</button>
+                <button type="button" id="tab-signup" onclick="switchTab('signup')"
+                    class="flex-1 py-2 text-xs font-bold uppercase rounded text-white/40 hover:text-white transition-all">Register</button>
+            </div>
+
+            <div id="signup-field" class="hidden">
+                <input type="text" id="secret" placeholder="Admin Secret Key"
+                    class="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-bb-gold outline-none">
+            </div>
+
+            <input type="email" id="username" placeholder="Email (admin@blackbanana.com)"
+                class="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-bb-gold outline-none" required>
+            <input type="password" id="password" placeholder="Password (password123)"
+                class="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-bb-gold outline-none" required>
+
+            <button type="submit" id="submit-btn"
+                class="w-full py-3 bg-bb-gold text-black font-bold uppercase rounded hover:bg-white transition-colors">
+                Authenticate
+            </button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let mode = 'login'; // login or signup
+
+        function switchTab(newMode) {
+            mode = newMode;
+            document.getElementById('signup-field').classList.toggle('hidden', mode === 'login');
+
+            const loginBtn = document.getElementById('tab-login');
+            const signupBtn = document.getElementById('tab-signup');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Clear errors
+            document.getElementById('error-msg')?.remove();
+
+            if (mode === 'login') {
+                loginBtn.className = "flex-1 py-2 text-xs font-bold uppercase rounded bg-bb-gold text-black transition-all";
+                signupBtn.className = "flex-1 py-2 text-xs font-bold uppercase rounded text-white/40 hover:text-white transition-all";
+                submitBtn.innerText = "Authenticate";
+            } else {
+                signupBtn.className = "flex-1 py-2 text-xs font-bold uppercase rounded bg-bb-gold text-black transition-all";
+                loginBtn.className = "flex-1 py-2 text-xs font-bold uppercase rounded text-white/40 hover:text-white transition-all";
+                submitBtn.innerText = "Create Account";
+            }
+        }
+
+        function showError(msg) {
+            const container = document.querySelector('form');
+            let errorDiv = document.getElementById('error-msg');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'error-msg';
+                errorDiv.className = "bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded text-center";
+                container.insertBefore(errorDiv, container.firstChild.nextSibling); // Insert after tabs
+            }
+            errorDiv.innerText = msg;
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('username')?.value; // Now email
+            const password = document.getElementById('password').value;
+            const secret = document.getElementById('secret').value;
+            const btn = document.getElementById('submit-btn');
+
+            // Client-side validation
+            if (!username.includes('@')) {
+                showError("Please enter a valid email address.");
+                return;
+            }
+            if (password.length < 6) {
+                showError("Password must be at least 6 characters.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+            // Clear previous errors
+            document.getElementById('error-msg')?.remove();
+
+            try {
+                if (mode === 'login') {
+                    await BB_DB.login(username, password);
+                    window.location.href = 'admin.html';
+                } else {
+                    if (!secret) {
+                        throw new Error("Admin secret is required");
+                    }
+                    await BB_DB.register(username, password, secret);
+                    alert('Registration successful! Please login.');
+                    switchTab('login');
+                }
+            } catch (err) {
+                showError(err.message || 'Authentication failed. Check credentials.');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = mode === 'login' ? "Authenticate" : "Create Account";
+            }
+        }
+    </script>
+</body>
+
+</html>
