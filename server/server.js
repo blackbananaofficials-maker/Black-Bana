@@ -7,11 +7,15 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
+const helmet = require('helmet');
+const xss = require('xss');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SECRET_KEY = process.env.SECRET_KEY || 'black_banana_secret_key_change_in_prod'; // Simple secret key
-const ADMIN_SECRET = process.env.ADMIN_SECRET || '123123'; // Key to create an admin account
+const SECRET_KEY = process.env.SECRET_KEY || 'bb_fallback_secret_for_dev_only';
+const ADMIN_SECRET = process.env.ADMIN_SECRET || '123123';
+const SALT_ROUNDS = 10;
 
 // --- CONFIGURATIONS ---
 
@@ -24,7 +28,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
     supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     console.log('Supabase client initialized.');
 } else {
-    console.log('Supabase credentials not found. Falling back to local JSON DB.');
+    console.log('✅ Local JSON Database initialized successfully.');
 }
 
 // 2. Nodemailer Initialization
@@ -43,8 +47,9 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
 }
 
 // Middleware
+app.use(helmet()); // Secure HTTP headers
 app.use(cors());
-app.use(bodyParser.json({ limit: '50mb' })); // Increased limit for base64 images/videos
+app.use(bodyParser.json({ limit: '10mb' })); // Reduced limit for safety
 app.use(express.static(path.join(__dirname, '../'))); // Serve static files from root
 
 // Database File Path
@@ -56,8 +61,11 @@ function initDB() {
     if (!fs.existsSync(DB_FILE)) {
         const defaultData = {
             admins: [
-                { username: 'admin@blackbanana.com', password: 'password123' }
-            ], // { username, password } - strictly plain text for this demo level
+                {
+                    username: 'admin@blackbanana.com',
+                    password: bcrypt.hashSync('password123', SALT_ROUNDS) // Securing default admin
+                }
+            ],
             projects: [],
             reviews: [],
             expertise: [],
@@ -157,7 +165,7 @@ initDB();
 
 // --- AUTH ROUTES ---
 
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
     const { username, password, secret } = req.body;
 
     if (secret !== ADMIN_SECRET) {
@@ -168,29 +176,61 @@ app.post('/api/auth/register', (req, res) => {
         return res.status(400).json({ error: 'Invalid email address' });
     }
 
-    const db = getDB();
-    if (db.admins.find(u => u.username === username)) {
-        return res.status(400).json({ error: 'Username already exists' });
+    try {
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+        if (supabase) {
+            const { data: existingUser, error: selErr } = await supabase.from('admins').select('*').eq('username', username).maybeSingle();
+            if (selErr) console.error("Supabase select error:", selErr);
+            if (existingUser) return res.status(400).json({ error: 'Username already exists' });
+
+            const { error } = await supabase.from('admins').insert([{ username, password: hashedPassword }]);
+            if (error) return res.status(500).json({ error: 'Database error' });
+        } else {
+            const db = getDB();
+            if (db.admins.find(u => u.username === username)) {
+                return res.status(400).json({ error: 'Username already exists' });
+            }
+            db.admins.push({ username, password: hashedPassword });
+            saveDB(db);
+        }
+
+        res.json({ success: true, message: 'Admin registered successfully' });
+    } catch (err) {
+        console.error("Auth register error:", err);
+        res.status(500).json({ error: 'Internal server error' });
     }
-
-    db.admins.push({ username, password }); // In prod, hash this password!
-    saveDB(db);
-
-    res.json({ success: true, message: 'Admin registered successfully' });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
-    const db = getDB();
+    let user = null;
 
-    const user = db.admins.find(u => u.username === username && u.password === password);
+    try {
+        if (supabase) {
+            const { data, error: selErr } = await supabase.from('admins').select('*').eq('username', username).maybeSingle();
+            if (selErr) console.error("Supabase select error:", selErr);
+            user = data;
+        } else {
+            const db = getDB();
+            user = db.admins.find(u => u.username === username);
+        }
 
-    if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({ success: true, token });
+    } catch (err) {
+        console.error("Auth login error:", err);
+        res.status(500).json({ error: 'Internal server error' });
     }
-
-    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
-    res.json({ success: true, token });
 });
 
 function verifyToken(req, res, next) {
@@ -211,23 +251,42 @@ function verifyToken(req, res, next) {
 // --- DATA ROUTES ---
 
 // Projects
-app.get('/api/projects', (req, res) => {
+app.get('/api/projects', async (req, res) => {
+    if (supabase) {
+        const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+        if (error) return res.status(500).json({ error: error.message });
+        return res.json(data);
+    }
     const db = getDB();
     res.json(db.projects);
 });
 
-app.post('/api/projects', verifyToken, (req, res) => {
-    const db = getDB();
+app.post('/api/projects', verifyToken, async (req, res) => {
     const newProject = req.body;
+    if (supabase) {
+        const { error } = await supabase.from('projects').insert([newProject]);
+        if (error) return res.status(500).json({ error: 'Error adding project' });
+        const { data } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+        return res.json(data);
+    }
+    const db = getDB();
+    if (!newProject.id) newProject.id = Date.now().toString();
     db.projects.unshift(newProject);
     saveDB(db);
     res.json(db.projects);
 });
 
-app.delete('/api/projects/:index', verifyToken, (req, res) => {
+app.delete('/api/projects/:id', verifyToken, async (req, res) => {
+    if (supabase) {
+        const { error } = await supabase.from('projects').delete().eq('id', req.params.id);
+        if (error) return res.status(500).json({ error: 'Error deleting project' });
+        const { data } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+        return res.json(data);
+    }
     const db = getDB();
-    const index = parseInt(req.params.index);
-    if (index >= 0 && index < db.projects.length) {
+    const id = req.params.id;
+    const index = db.projects.findIndex(p => (p.id && p.id.toString() === id.toString()) || db.projects.indexOf(p).toString() === id.toString());
+    if (index !== -1) {
         db.projects.splice(index, 1);
         saveDB(db);
     }
@@ -235,24 +294,73 @@ app.delete('/api/projects/:index', verifyToken, (req, res) => {
 });
 
 // Reviews
-app.get('/api/reviews', (req, res) => {
+app.get('/api/reviews', async (req, res) => {
+    if (supabase) {
+        const { data, error } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+        if (error) return res.status(500).json({ error: error.message });
+        return res.json(data);
+    }
     const db = getDB();
     res.json(db.reviews);
 });
 
-app.post('/api/reviews', (req, res) => {
-    // Public endpoint for submitting reviews
+app.post('/api/reviews', async (req, res) => {
+    const { name, role, text, rating, email } = req.body;
+
+    // Sanitize user input for XSS
+    const newReview = {
+        name: xss(name),
+        role: xss(role),
+        text: xss(text),
+        rating: parseInt(rating) || 5,
+        email: xss(email),
+        is_featured: false
+    };
+
+    if (supabase) {
+        const { error } = await supabase.from('reviews').insert([newReview]);
+        if (error) return res.status(500).json({ error: 'Error saving review' });
+        const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+        return res.json(data);
+    }
     const db = getDB();
-    const newReview = req.body;
+    newReview.id = Date.now().toString(); // Consistent IDs
     db.reviews.unshift(newReview);
     saveDB(db);
     res.json(db.reviews);
 });
 
-app.delete('/api/reviews/:index', verifyToken, (req, res) => {
+app.put('/api/reviews/:id/feature', verifyToken, async (req, res) => {
+    const { is_featured } = req.body;
+    const { id } = req.params;
+
+    if (supabase) {
+        const { error } = await supabase.from('reviews').update({ is_featured }).eq('id', id);
+        if (error) return res.status(500).json({ error: 'Error updating review' });
+        const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+        return res.json(data);
+    }
+
     const db = getDB();
-    const index = parseInt(req.params.index);
-    if (index >= 0 && index < db.reviews.length) {
+    const index = db.reviews.findIndex(r => (r.id && r.id.toString() === id.toString()) || db.reviews.indexOf(r).toString() === id.toString());
+    if (index !== -1) {
+        db.reviews[index].is_featured = is_featured;
+        saveDB(db);
+    }
+    res.json(db.reviews);
+});
+
+app.delete('/api/reviews/:id', verifyToken, async (req, res) => {
+    if (supabase) {
+        const { error } = await supabase.from('reviews').delete().eq('id', req.params.id);
+        if (error) return res.status(500).json({ error: 'Error deleting review' });
+        const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+        return res.json(data);
+    }
+    const db = getDB();
+    const id = req.params.id;
+    const index = db.reviews.findIndex(r => (r.id && r.id.toString() === id.toString()) || db.reviews.indexOf(r).toString() === id.toString());
+    if (index !== -1) {
         db.reviews.splice(index, 1);
         saveDB(db);
     }
@@ -260,23 +368,42 @@ app.delete('/api/reviews/:index', verifyToken, (req, res) => {
 });
 
 // Expertise
-app.get('/api/expertise', (req, res) => {
+app.get('/api/expertise', async (req, res) => {
+    if (supabase) {
+        const { data, error } = await supabase.from('expertise').select('*').order('created_at', { ascending: true });
+        if (error) return res.status(500).json({ error: error.message });
+        return res.json(data);
+    }
     const db = getDB();
     res.json(db.expertise);
 });
 
-app.post('/api/expertise', verifyToken, (req, res) => {
-    const db = getDB();
+app.post('/api/expertise', verifyToken, async (req, res) => {
     const newExpertise = req.body;
+    if (supabase) {
+        const { error } = await supabase.from('expertise').insert([newExpertise]);
+        if (error) return res.status(500).json({ error: 'Error adding service' });
+        const { data } = await supabase.from('expertise').select('*').order('created_at', { ascending: true });
+        return res.json(data);
+    }
+    const db = getDB();
+    if (!newExpertise.id) newExpertise.id = Date.now().toString();
     db.expertise.push(newExpertise);
     saveDB(db);
     res.json(db.expertise);
 });
 
-app.delete('/api/expertise/:index', verifyToken, (req, res) => {
+app.delete('/api/expertise/:id', verifyToken, async (req, res) => {
+    if (supabase) {
+        const { error } = await supabase.from('expertise').delete().eq('id', req.params.id);
+        if (error) return res.status(500).json({ error: 'Error deleting service' });
+        const { data } = await supabase.from('expertise').select('*').order('created_at', { ascending: true });
+        return res.json(data);
+    }
     const db = getDB();
-    const index = parseInt(req.params.index);
-    if (index >= 0 && index < db.expertise.length) {
+    const id = req.params.id;
+    const index = db.expertise.findIndex(e => (e.id && e.id.toString() === id.toString()) || db.expertise.indexOf(e).toString() === id.toString());
+    if (index !== -1) {
         db.expertise.splice(index, 1);
         saveDB(db);
     }
@@ -285,26 +412,53 @@ app.delete('/api/expertise/:index', verifyToken, (req, res) => {
 
 // Contact
 app.post('/api/contact', async (req, res) => {
-    const db = getDB();
-    const message = {
-        id: Date.now(),
-        ...req.body,
-        date: new Date().toISOString()
+    const { name, email, company, message } = req.body;
+
+    const messageInfo = {
+        name: xss(name),
+        email: xss(email),
+        company: xss(company),
+        message: xss(message)
     };
 
-    // Fallback to local DB for storing messages
-    if (!db.messages) db.messages = []; // Safety check for old DBs
-    db.messages.unshift(message);
-    saveDB(db);
+    if (supabase) {
+        const { error } = await supabase.from('messages').insert([messageInfo]);
+        if (error) console.error('Supabase insert error', error);
+    } else {
+        const msg = {
+            id: Date.now().toString(),
+            ...messageInfo,
+            date: new Date().toISOString()
+        };
+        const db = getDB();
+        if (!db.messages) db.messages = [];
+        db.messages.unshift(msg);
+        saveDB(db);
+    }
 
     // Send email notification via Nodemailer
     if (transporter) {
         try {
             const mailOptions = {
-                from: process.env.EMAIL_USER,
-                to: process.env.EMAIL_USER, // Send to the admin's email
-                subject: `New Contact Request from ${message.name || 'Website User'}`,
-                text: `You have received a new contact request:\n\nName: ${message.name}\nEmail: ${message.email}\nPhone: ${message.phone}\nMessage: ${message.message}\nDate: ${message.date}`,
+                from: `"Black Banana Website" <${process.env.EMAIL_USER}>`,
+                to: process.env.EMAIL_USER,
+                replyTo: messageInfo.email,
+                subject: `🔥 NEW LEAD: ${messageInfo.name} from ${messageInfo.company || 'Direct'}`,
+                html: `
+                    <div style="font-family: sans-serif; color: #333; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+                        <h2 style="color: #F59E0B; text-transform: uppercase;">New Contact Request</h2>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p><strong>Name:</strong> ${messageInfo.name}</p>
+                        <p><strong>Email:</strong> ${messageInfo.email}</p>
+                        <p><strong>Company:</strong> ${messageInfo.company || 'Not provided'}</p>
+                        <p><strong>Message:</strong></p>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; font-style: italic;">
+                            "${messageInfo.message}"
+                        </div>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #999;">This email was sent from the Black Banana digital empire contact form.</p>
+                    </div>
+                `,
             };
             await transporter.sendMail(mailOptions);
             console.log('Contact email sent successfully.');

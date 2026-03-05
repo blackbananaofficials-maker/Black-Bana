@@ -49,7 +49,75 @@
         body {
             background-color: #050505;
             color: #ffffff;
-            overflow-x: hidden;
+            overflow: hidden;
+            /* Prevent scroll during load */
+        }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+
+        .loader-b {
+            color: #F59E0B;
+            font-size: 5rem;
+            font-weight: 700;
+            animation: pulse-b 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-b {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        .loader-line {
+            width: 150px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 99px;
+        }
+
+        .loader-line::after {
+            content: '';
+            position: absolute;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #F59E0B;
+            animation: progress-b 2s infinite;
+        }
+
+        @keyframes progress-b {
+            0% {
+                left: -100%;
+            }
+
+            50% {
+                left: 0%;
+            }
+
+            100% {
+                left: 100%;
+            }
         }
 
         .no-scrollbar::-webkit-scrollbar {
@@ -198,7 +266,6 @@
             font-family: 'Space Grotesk', sans-serif;
             color: rgba(255, 255, 255, 0.05);
             font-size: 100px;
-            md: font-size: 140px;
             line-height: 0.8;
             font-weight: 700;
             position: absolute;
@@ -207,6 +274,12 @@
             z-index: 0;
             transition: all 0.5s ease;
             pointer-events: none;
+        }
+
+        @media (min-width: 768px) {
+            .big-number {
+                font-size: 140px;
+            }
         }
 
         .reactor-card:hover .big-number {
@@ -251,7 +324,7 @@
                 <a href="#agency"
                     class="text-sm font-medium text-white/70 hover:text-bb-gold transition-colors uppercase tracking-wider text-[11px]">Method</a>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4" id="desktop-auth-container">
                 <a href="#contact"
                     class="hidden md:inline-block px-5 py-2 bg-white/5 border border-white/20 rounded-full hover:bg-bb-gold hover:text-black hover:border-bb-gold transition-all uppercase text-[10px] font-bold tracking-widest hover-trigger">Let's
                     Talk</a>
@@ -287,10 +360,30 @@
     <main>
 
         <section class="h-[50vh] md:h-screen w-full relative flex items-center justify-center overflow-hidden">
-
-            <video autoplay muted loop playsinline class="video-bg hidden md:block">
-                <source src="Hero Video.mp4" type="video/mp4">
+            <video id="heroVideo" autoplay loop playsinline class="video-bg hidden md:block">
+                <source src="Hero Video v2.mp4" type="video/mp4">
             </video>
+
+            <!-- Manual Mute Toggle -->
+            <button id="muteToggle"
+                class="hidden md:flex absolute bottom-8 right-8 z-30 w-12 h-12 bg-black/40 backdrop-blur-md border border-white/10 rounded-full items-center justify-center text-white hover:border-bb-gold transition-all hover-trigger">
+                <div id="unmuteIcon">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z">
+                        </path>
+                    </svg>
+                </div>
+                <div id="muteIcon" class="hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
+                    </svg>
+                </div>
+            </button>
 
             <div class="absolute inset-0 w-full h-full bg-[#050505] md:hidden relative overflow-hidden">
                 <div
@@ -317,42 +410,38 @@
                 <ul
                     class="flex items-center justify-center md:justify-start [&_li]:mx-8 md:[&_li]:mx-12 [&_img]:max-w-none animate-infinite-scroll group-hover/ticker:[animation-play-state:paused]">
                     <li class="text-3xl md:text-5xl font-bold uppercase text-transparent transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]"
-                        style="-webkit-text-stroke: 1px white;">Nike</li>
+                        style="-webkit-text-stroke: 1px white;">Edverb</li>
                     <li
                         class="text-3xl md:text-5xl font-bold uppercase text-white transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]">
-                        Adidas</li>
+                        Pixy</li>
                     <li class="text-3xl md:text-5xl font-bold uppercase text-transparent transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]"
-                        style="-webkit-text-stroke: 1px white;">Samsung</li>
+                        style="-webkit-text-stroke: 1px white;">Caspera</li>
                     <li
                         class="text-3xl md:text-5xl font-bold uppercase text-white transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]">
-                        Google</li>
+                        Anchor.mitul</li>
                     <li class="text-3xl md:text-5xl font-bold uppercase text-transparent transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]"
-                        style="-webkit-text-stroke: 1px white;">Sony</li>
+                        style="-webkit-text-stroke: 1px white;">Shreenathji investments</li>
                     <li
                         class="text-3xl md:text-5xl font-bold uppercase text-white transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]">
-                        Tesla</li>
-                    <li class="text-3xl md:text-5xl font-bold uppercase text-transparent transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]"
-                        style="-webkit-text-stroke: 1px white;">Spotify</li>
+                        Begum’s Pride</li>
                 </ul>
                 <ul class="flex items-center justify-center md:justify-start [&_li]:mx-8 md:[&_li]:mx-12 [&_img]:max-w-none animate-infinite-scroll group-hover/ticker:[animation-play-state:paused]"
                     aria-hidden="true">
                     <li class="text-3xl md:text-5xl font-bold uppercase text-transparent transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]"
-                        style="-webkit-text-stroke: 1px white;">Nike</li>
+                        style="-webkit-text-stroke: 1px white;">Edverb</li>
                     <li
                         class="text-3xl md:text-5xl font-bold uppercase text-white transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]">
-                        Adidas</li>
+                        Pixy</li>
                     <li class="text-3xl md:text-5xl font-bold uppercase text-transparent transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]"
-                        style="-webkit-text-stroke: 1px white;">Samsung</li>
+                        style="-webkit-text-stroke: 1px white;">Caspera</li>
                     <li
                         class="text-3xl md:text-5xl font-bold uppercase text-white transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]">
-                        Google</li>
+                        Anchor.mitul</li>
                     <li class="text-3xl md:text-5xl font-bold uppercase text-transparent transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]"
-                        style="-webkit-text-stroke: 1px white;">Sony</li>
+                        style="-webkit-text-stroke: 1px white;">Shreenathji investments</li>
                     <li
                         class="text-3xl md:text-5xl font-bold uppercase text-white transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]">
-                        Tesla</li>
-                    <li class="text-3xl md:text-5xl font-bold uppercase text-transparent transition-all duration-300 cursor-pointer active:scale-110 hover:scale-110 active:text-bb-gold hover:text-bb-gold active:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)] hover:drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]"
-                        style="-webkit-text-stroke: 1px white;">Spotify</li>
+                        Begum’s Pride</li>
                 </ul>
             </div>
         </section>
@@ -395,100 +484,7 @@
 
                 <div id="workContainer"
                     class="flex gap-4 md:gap-6 overflow-x-auto pb-12 snap-x snap-mandatory no-scrollbar scroll-smooth pl-4 md:pl-0">
-
-                    <div class="min-w-[80vw] md:min-w-[350px] h-[500px] md:h-[550px] relative rounded-2xl overflow-hidden snap-center border border-white/10 group/card hover-trigger work-card"
-                        data-category="ugc">
-                        <video
-                            class="w-full h-full object-cover opacity-60 group-hover/card:opacity-100 transition-opacity duration-500"
-                            autoplay muted loop playsinline>
-                            <source
-                                src="https://assets.mixkit.co/videos/preview/mixkit-young-woman-recording-a-video-on-her-phone-39739-large.mp4"
-                                type="video/mp4">
-                        </video>
-                        <div
-                            class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90">
-                        </div>
-                        <div class="absolute bottom-6 left-6">
-                            <span
-                                class="px-3 py-1 bg-bb-gold text-black text-[10px] font-bold uppercase tracking-widest rounded-full mb-2 inline-block">UGC</span>
-                            <h3 class="text-2xl font-bold uppercase">Fashion Week</h3>
-                        </div>
-                    </div>
-
-                    <div class="min-w-[80vw] md:min-w-[350px] h-[500px] md:h-[550px] relative rounded-2xl overflow-hidden snap-center border border-white/10 group/card hover-trigger work-card"
-                        data-category="production">
-                        <video
-                            class="w-full h-full object-cover opacity-60 group-hover/card:opacity-100 transition-opacity duration-500"
-                            autoplay muted loop playsinline>
-                            <source
-                                src="https://assets.mixkit.co/videos/preview/mixkit-fireworks-illuminating-the-beach-at-night-4168-large.mp4"
-                                type="video/mp4">
-                        </video>
-                        <div
-                            class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90">
-                        </div>
-                        <div class="absolute bottom-6 left-6">
-                            <span
-                                class="px-3 py-1 bg-bb-gold text-black text-[10px] font-bold uppercase tracking-widest rounded-full mb-2 inline-block">Production</span>
-                            <h3 class="text-2xl font-bold uppercase">Night Life</h3>
-                        </div>
-                    </div>
-
-                    <div class="min-w-[80vw] md:min-w-[350px] h-[500px] md:h-[550px] relative rounded-2xl overflow-hidden snap-center border border-white/10 group/card hover-trigger work-card"
-                        data-category="production">
-                        <video
-                            class="w-full h-full object-cover opacity-60 group-hover/card:opacity-100 transition-opacity duration-500"
-                            autoplay muted loop playsinline>
-                            <source
-                                src="https://assets.mixkit.co/videos/preview/mixkit-man-dancing-under-changing-lights-1240-large.mp4"
-                                type="video/mp4">
-                        </video>
-                        <div
-                            class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90">
-                        </div>
-                        <div class="absolute bottom-6 left-6">
-                            <span
-                                class="px-3 py-1 bg-bb-gold text-black text-[10px] font-bold uppercase tracking-widest rounded-full mb-2 inline-block">Production</span>
-                            <h3 class="text-2xl font-bold uppercase">Neon Dance</h3>
-                        </div>
-                    </div>
-
-                    <div class="min-w-[80vw] md:min-w-[350px] h-[500px] md:h-[550px] relative rounded-2xl overflow-hidden snap-center border border-white/10 group/card hover-trigger work-card"
-                        data-category="branding">
-                        <video
-                            class="w-full h-full object-cover opacity-60 group-hover/card:opacity-100 transition-opacity duration-500"
-                            autoplay muted loop playsinline>
-                            <source
-                                src="https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-12347-large.mp4"
-                                type="video/mp4">
-                        </video>
-                        <div
-                            class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90">
-                        </div>
-                        <div class="absolute bottom-6 left-6">
-                            <span
-                                class="px-3 py-1 bg-bb-gold text-black text-[10px] font-bold uppercase tracking-widest rounded-full mb-2 inline-block">Branding</span>
-                            <h3 class="text-2xl font-bold uppercase">Fluid Identity</h3>
-                        </div>
-                    </div>
-
-                    <div class="min-w-[80vw] md:min-w-[350px] h-[500px] md:h-[550px] relative rounded-2xl overflow-hidden snap-center border border-white/10 group/card hover-trigger work-card"
-                        data-category="cgi">
-                        <video
-                            class="w-full h-full object-cover opacity-60 group-hover/card:opacity-100 transition-opacity duration-500"
-                            autoplay muted loop playsinline>
-                            <source src="https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4"
-                                type="video/mp4">
-                        </video>
-                        <div
-                            class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90">
-                        </div>
-                        <div class="absolute bottom-6 left-6">
-                            <span
-                                class="px-3 py-1 bg-bb-gold text-black text-[10px] font-bold uppercase tracking-widest rounded-full mb-2 inline-block">CGI</span>
-                            <h3 class="text-2xl font-bold uppercase">Cosmos</h3>
-                        </div>
-                    </div>
+                    <!-- Dynamic Projects Loading -->
                 </div>
             </div>
         </section>
@@ -514,18 +510,20 @@
             </div>
         </section>
 
-        <section id="agency" class="py-20 md:py-32 px-4 md:px-12">
+        <section id="agency" class="py-20 md:py-32 px-4 md:px-12 bg-[#050505]">
             <div class="container mx-auto agency-content-wrapper">
                 <div class="mb-16 md:mb-20 md:text-center">
                     <h2
                         class="text-[14vw] md:text-[6vw] font-bold uppercase leading-none text-white opacity-90 tracking-tighter">
-                        The <span class="text-bb-gold">Method</span>
+                        THE <span class="text-bb-gold">METHOD</span>
                     </h2>
                     <p class="text-white/60 mt-4 max-w-lg mx-auto font-body text-sm md:text-base">A calculated process
                         designed to extract maximum value and eliminate guesswork.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 agency-grid" id="agencyGrid">
-                    <div class="reactor-card min-h-[400px] md:min-h-[450px]">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 agency-grid mb-20" id="agencyGrid">
+                    <!-- 01 DISSECT -->
+                    <div class="reactor-card min-h-[450px]">
                         <div class="reactor-content">
                             <span class="big-number">01</span>
                             <div class="flex justify-between items-start mb-8 relative z-20">
@@ -538,14 +536,27 @@
                                 </div>
                             </div>
                             <div class="relative z-20">
-                                <h3 class="text-2xl md:text-3xl font-bold uppercase mb-4 text-white">Discovery</h3>
-                                <p class="text-white/70 font-body text-sm leading-relaxed">We strip your brand down to
-                                    the studs. We analyze the data, the market, and the competition to find the winning
-                                    angle.</p>
+                                <h3 class="text-2xl md:text-3xl font-bold uppercase mb-4 text-white">DISSECT</h3>
+                                <p class="text-white/40 text-xs italic mb-4 font-body italic">We rip your brand apart.
+                                </p>
+                                <ul class="text-white/70 font-body text-sm space-y-2 mb-6">
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Brutal brand
+                                        audit</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Competitor
+                                        weaknesses exposed</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Offer
+                                        positioning correction</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Revenue leak
+                                        detection</li>
+                                </ul>
+                                <p class="text-bb-gold/80 text-xs font-bold uppercase tracking-wider">👉 If it’s broken,
+                                    we fix it. If it’s weak, we replace it.</p>
                             </div>
                         </div>
                     </div>
-                    <div class="reactor-card min-h-[400px] md:min-h-[450px]">
+
+                    <!-- 02 WEAPONIZE -->
+                    <div class="reactor-card min-h-[450px]">
                         <div class="reactor-content">
                             <span class="big-number">02</span>
                             <div class="flex justify-between items-start mb-8 relative z-20">
@@ -553,20 +564,32 @@
                                     class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 text-white icon-box">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
-                                        </path>
+                                            d="M12 15l8.5-7.5L12 3m0 12L3.5 7.5 12 3m0 12v6"></path>
                                     </svg>
                                 </div>
                             </div>
                             <div class="relative z-20">
-                                <h3 class="text-2xl md:text-3xl font-bold uppercase mb-4 text-white">Creation</h3>
-                                <p class="text-white/70 font-body text-sm leading-relaxed">Designers, developers, and
-                                    editors converge. We build assets that aren't just pretty—they are psychologically
-                                    designed to convert.</p>
+                                <h3 class="text-2xl md:text-3xl font-bold uppercase mb-4 text-white">WEAPONIZE</h3>
+                                <p class="text-white/40 text-xs italic mb-4 font-body italic">Strategy becomes your
+                                    unfair advantage.</p>
+                                <ul class="text-white/70 font-body text-sm space-y-2 mb-6">
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span>
+                                        High-converting funnel architecture</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Offer
+                                        stacking psychology</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Content built
+                                        to trigger action</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Paid
+                                        acquisition battle plan</li>
+                                </ul>
+                                <p class="text-bb-gold/80 text-xs font-bold uppercase tracking-wider">👉 Every asset
+                                    built to dominate attention.</p>
                             </div>
                         </div>
                     </div>
-                    <div class="reactor-card min-h-[400px] md:min-h-[450px]">
+
+                    <!-- 03 BUILD TO CONVERT -->
+                    <div class="reactor-card min-h-[450px]">
                         <div class="reactor-content">
                             <span class="big-number">03</span>
                             <div class="flex justify-between items-start mb-8 relative z-20">
@@ -579,12 +602,106 @@
                                 </div>
                             </div>
                             <div class="relative z-20">
-                                <h3 class="text-2xl md:text-3xl font-bold uppercase mb-4 text-white">Launch & Scale</h3>
-                                <p class="text-white/70 font-body text-sm leading-relaxed">We push the button. But we
-                                    don't walk away. We monitor real-time data and optimize aggressively.</p>
+                                <h3 class="text-2xl md:text-3xl font-bold uppercase mb-4 text-white">BUILD TO CONVERT
+                                </h3>
+                                <p class="text-white/40 text-xs italic mb-4 font-body italic">Pretty is useless.
+                                    Profitable wins.</p>
+                                <ul class="text-white/70 font-body text-sm space-y-2 mb-6">
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Landing pages
+                                        engineered for conversions</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Ad creatives
+                                        designed to interrupt</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Copy that
+                                        forces decisions</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Automation
+                                        that closes while you sleep</li>
+                                </ul>
+                                <p class="text-bb-gold/80 text-xs font-bold uppercase tracking-wider">👉 No vanity
+                                    metrics. Only revenue metrics.</p>
                             </div>
                         </div>
                     </div>
+
+                    <!-- 04 ATTACK THE MARKET -->
+                    <div class="reactor-card min-h-[450px]">
+                        <div class="reactor-content">
+                            <span class="big-number">04</span>
+                            <div class="flex justify-between items-start mb-8 relative z-20">
+                                <div
+                                    class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 text-white icon-box">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="relative z-20">
+                                <h3 class="text-2xl md:text-3xl font-bold uppercase mb-4 text-white">ATTACK THE MARKET
+                                </h3>
+                                <p class="text-white/40 text-xs italic mb-4 font-body italic">Launch hard. Optimize
+                                    harder.</p>
+                                <ul class="text-white/70 font-body text-sm space-y-2 mb-6">
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Aggressive
+                                        campaign deployment</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Real-time A/B
+                                        testing</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Cost-per-lead
+                                        compression</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Data-driven
+                                        scaling</li>
+                                </ul>
+                                <p class="text-bb-gold/80 text-xs font-bold uppercase tracking-wider">👉 We don’t “try
+                                    ads.” We control them.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 05 SCALE WITHOUT MERCY -->
+                    <div class="reactor-card min-h-[450px]">
+                        <div class="reactor-content">
+                            <span class="big-number">05</span>
+                            <div class="flex justify-between items-start mb-8 relative z-20">
+                                <div
+                                    class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 text-white icon-box">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="relative z-20">
+                                <h3 class="text-2xl md:text-3xl font-bold uppercase mb-4 text-white">SCALE WITHOUT MERCY
+                                </h3>
+                                <p class="text-white/40 text-xs italic mb-4 font-body italic">Once it works, we push.
+                                </p>
+                                <ul class="text-white/70 font-body text-sm space-y-2 mb-6">
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Budget
+                                        scaling frameworks</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Retargeting
+                                        domination</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Funnel
+                                        multipliers</li>
+                                    <li class="flex items-start gap-2"><span class="text-bb-gold">•</span> Authority
+                                        positioning</li>
+                                </ul>
+                                <p class="text-bb-gold/80 text-xs font-bold uppercase tracking-wider">👉 From traction
+                                    to takeover.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Statement -->
+                <div class="text-center">
+                    <div
+                        class="inline-block p-[2px] rounded-full bg-gradient-to-r from-transparent via-bb-gold to-transparent opacity-50 mb-8 w-full max-w-2xl mx-auto h-[1px]">
+                    </div>
+                    <p
+                        class="text-2xl md:text-4xl font-bold uppercase text-white/90 italic tracking-tighter leading-tight max-w-4xl mx-auto">
+                        If you’re not ready to <span class="text-bb-gold">scale aggressively</span>, <br
+                            class="hidden md:block"> we’re not your agency.
+                    </p>
                 </div>
             </div>
         </section>
@@ -601,46 +718,8 @@
                         class="text-xs font-bold uppercase tracking-widest text-bb-gold hover:underline">Submit Feedback
                         →</a>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div
-                        class="bg-white/5 border border-white/5 p-8 rounded-2xl backdrop-blur-sm hover:border-bb-gold/50 transition-colors hover-trigger">
-                        <div class="text-bb-gold mb-4 text-xl">★★★★★</div>
-                        <p class="text-white/70 mb-8 font-body leading-relaxed text-sm">"Black Banana isn't an agency,
-                            they are a weapon. Our conversion rate doubled in 30 days."</p>
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-gray-600 rounded-full"></div>
-                            <div>
-                                <p class="font-bold text-sm">krutarth Kansagra</p>
-                                <p class="text-[10px] uppercase text-white/40">CEO, Edverb</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div
-                        class="bg-white/5 border border-white/5 p-8 rounded-2xl backdrop-blur-sm hover:border-bb-gold/50 transition-colors hover-trigger md:-translate-y-8">
-                        <div class="text-bb-gold mb-4 text-xl">★★★★★</div>
-                        <p class="text-white/70 mb-8 font-body leading-relaxed text-sm">"The visual identity they
-                            created for us is iconic. We consistently get asked who built our site."</p>
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-gray-600 rounded-full"></div>
-                            <div>
-                                <p class="font-bold text-sm">Rajesh Shah</p>
-                                <p class="text-[10px] uppercase text-white/40">CMO, VibeDrink</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div
-                        class="bg-white/5 border border-white/5 p-8 rounded-2xl backdrop-blur-sm hover:border-bb-gold/50 transition-colors hover-trigger">
-                        <div class="text-bb-gold mb-4 text-xl">★★★★★</div>
-                        <p class="text-white/70 mb-8 font-body leading-relaxed text-sm">"Professional, fast, and
-                            incredibly talented. The best investment we made this year."</p>
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-gray-600 rounded-full"></div>
-                            <div>
-                                <p class="font-bold text-sm">Amit Sharma</p>
-                                <p class="text-[10px] uppercase text-white/40">Founder, GearUp</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="reviewsContainer">
+                    <!-- Dynamic Reviews Loading -->
                 </div>
             </div>
         </section>
@@ -722,6 +801,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
 
     <script src="script.js"></script>
     <script>
@@ -781,28 +861,79 @@
             });
         }
 
+        async function renderProjects() {
+            const container = document.getElementById('workContainer');
+            if (!container) return;
+            const projects = await BB_DB.getProjects();
+            if (!projects || projects.length === 0) {
+                container.innerHTML = '<div class="text-white/50 w-full text-center py-12">No projects found.</div>';
+                return;
+            }
+            container.innerHTML = projects.map(p => `
+                <div class="min-w-[80vw] md:min-w-[350px] h-[500px] md:h-[550px] relative rounded-2xl overflow-hidden snap-center border border-white/10 group/card hover-trigger work-card" data-category="${p.type ? p.type.toLowerCase() : 'all'}">
+                    ${p.isVideo ?
+                    `<video class="w-full h-full object-cover opacity-60 group-hover/card:opacity-100 transition-opacity duration-500" autoplay muted loop playsinline><source src="${p.media}" type="video/mp4"></video>`
+                    : `<img src="${p.media}" class="w-full h-full object-cover opacity-60 group-hover/card:opacity-100 transition-opacity duration-500" />`}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <span class="px-3 py-1 bg-bb-gold text-black text-[10px] font-bold uppercase tracking-widest rounded-full mb-2 inline-block">${p.type || ''}</span>
+                        <h3 class="text-2xl font-bold uppercase">${p.title || ''}</h3>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function renderReviews() {
+            const container = document.getElementById('reviewsContainer');
+            if (!container) return;
+            const allReviews = await BB_DB.getReviews();
+            if (!allReviews || allReviews.length === 0) {
+                container.innerHTML = '<div class="col-span-3 text-center text-white/50 py-8">No reviews yet.</div>';
+                return;
+            }
+
+            // Only show featured reviews, limit to 3
+            const reviews = allReviews.filter(r => r.is_featured).slice(0, 3);
+
+            if (reviews.length === 0) {
+                container.innerHTML = '<div class="col-span-3 text-center text-white/50 py-8">No featured reviews to display.</div>';
+                return;
+            }
+
+            container.innerHTML = reviews.map((r, i) => {
+                const gravatarHash = r.email ? md5(r.email.trim().toLowerCase()) : null;
+                const avatarUrl = gravatarHash ? `https://www.gravatar.com/avatar/${gravatarHash}?s=100&d=404` : null;
+
+                return `
+                <div class="bg-white/5 border border-white/5 p-8 rounded-2xl backdrop-blur-sm hover:border-bb-gold/50 transition-colors hover-trigger ${i === 1 ? 'md:-translate-y-8' : ''}">
+                    <div class="text-bb-gold mb-4 text-xl">
+                        ${'★'.repeat(r.rating || 5)}${'☆'.repeat(5 - (r.rating || 5))}
+                    </div>
+                    <p class="text-white/70 mb-8 font-body leading-relaxed text-sm">"${r.text}"</p>
+                    <div class="flex items-center gap-3">
+                        <div class="relative w-10 h-10 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center text-xs font-bold text-white uppercase">
+                            ${avatarUrl ? `<img src="${avatarUrl}" alt="${r.name}" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'">` : ''}
+                            <span>${r.name ? r.name.charAt(0) : ''}</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm">${r.name}</p>
+                            <p class="text-[10px] uppercase text-white/40">${r.role}</p>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
         async function renderExpertise() {
             const container = document.getElementById('expertiseContainer');
-            const expertise = [
-                {
-                    title: "Social Media",
-                    desc: "Data-driven strategies to grow your audience and engagement.",
-                    icon: `<svg class="w-16 h-16 md:w-20 md:h-20 text-bb-gold mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>`,
-                    code: "01"
-                },
-                {
-                    title: "SEO Ranking",
-                    desc: "Rank higher, drive organic traffic, and dominate search results.",
-                    icon: `<svg class="w-16 h-16 md:w-20 md:h-20 text-bb-gold mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>`,
-                    code: "02"
-                },
-                {
-                    title: "Web Development",
-                    desc: "High-performance, aesthetic websites built to convert.",
-                    icon: `<svg class="w-16 h-16 md:w-20 md:h-20 text-bb-gold mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>`,
-                    code: "03"
-                }
-            ];
+            if (!container) return;
+            const fullExpertise = await BB_DB.getExpertise();
+            if (!fullExpertise || fullExpertise.length === 0) return;
+
+            // Only show the first 3 items on the dashboard
+            const expertise = fullExpertise.slice(0, 3);
+
             container.innerHTML = expertise.map((e, idx) => `
                 <div class="service-card group bg-[#0A0A0A] hover-trigger border border-white/5 hover:border-bb-gold/30 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
@@ -831,10 +962,84 @@
             });
         }
 
-        window.addEventListener('load', () => {
-            renderExpertise();
-            attachVideoListeners();
+        window.addEventListener('load', async () => {
+            renderAuthUI();
+            await renderExpertise();
+            await renderProjects();
+            await renderReviews();
+            attachVideoListeners(); // Wait till render to attach!
+
+            // Hide Preloader
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                preloader.style.opacity = '0';
+                preloader.style.visibility = 'hidden';
+                document.body.style.overflow = 'auto';
+            }
         });
+
+        // --- DYNAMIC AUTH UI ---
+        function renderAuthUI() {
+            const authContainer = document.getElementById('desktop-auth-container');
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (!authContainer || !mobileMenu) return;
+
+            document.querySelectorAll('.dynamic-auth-btn').forEach(el => el.remove());
+
+            const isLoggedIn = localStorage.getItem('bb_auth_token');
+
+            if (isLoggedIn) {
+                const adminBtn = document.createElement('a');
+                adminBtn.href = 'admin.html';
+                adminBtn.className = 'dynamic-auth-btn hidden md:inline-block px-5 py-2 bg-bb-gold text-black border border-bb-gold rounded-full hover:bg-white hover:text-black hover:border-white transition-all uppercase text-[10px] font-bold tracking-widest hover-trigger';
+                adminBtn.innerText = 'Admin Panel';
+
+                const logoutBtn = document.createElement('button');
+                logoutBtn.onclick = () => BB_DB.logout();
+                logoutBtn.className = 'dynamic-auth-btn hidden md:inline-block px-5 py-2 bg-red-500/10 text-red-500 border border-red-500/50 rounded-full hover:bg-red-500 hover:text-white transition-all uppercase text-[10px] font-bold tracking-widest hover-trigger';
+                logoutBtn.innerText = 'Logout';
+
+                authContainer.prepend(logoutBtn);
+                authContainer.prepend(adminBtn);
+
+                const mobileAdminBtn = document.createElement('a');
+                mobileAdminBtn.href = 'admin.html';
+                mobileAdminBtn.className = 'dynamic-auth-btn mobile-link text-3xl font-bold uppercase tracking-wider text-bb-gold hover:text-white transition-colors';
+                mobileAdminBtn.innerText = 'Admin Panel';
+                mobileAdminBtn.addEventListener('click', toggleMenu);
+
+                const mobileLogoutBtn = document.createElement('button');
+                mobileLogoutBtn.onclick = () => { BB_DB.logout(); };
+                mobileLogoutBtn.className = 'dynamic-auth-btn mobile-link text-3xl font-bold uppercase tracking-wider text-red-500 hover:text-red-400 transition-colors';
+                mobileLogoutBtn.innerText = 'Logout';
+                mobileLogoutBtn.addEventListener('click', toggleMenu);
+
+                const contactBtn = mobileMenu.querySelector('a[href="#contact"]');
+                if (contactBtn) {
+                    mobileMenu.insertBefore(mobileAdminBtn, contactBtn);
+                    mobileMenu.insertBefore(mobileLogoutBtn, contactBtn);
+                }
+            } else {
+                const loginBtn = document.createElement('a');
+                loginBtn.href = 'login.html';
+                loginBtn.className = 'dynamic-auth-btn hidden md:inline-block px-5 py-2 bg-white/5 border border-white/20 rounded-full hover:bg-bb-gold hover:text-black hover:border-bb-gold transition-all uppercase text-[10px] font-bold tracking-widest hover-trigger';
+                loginBtn.innerText = 'Login';
+
+                authContainer.prepend(loginBtn);
+
+                const mobileLoginBtn = document.createElement('a');
+                mobileLoginBtn.href = 'login.html';
+                mobileLoginBtn.className = 'dynamic-auth-btn mobile-link text-3xl font-bold uppercase tracking-wider hover:text-bb-gold transition-colors';
+                mobileLoginBtn.innerText = 'Login';
+                mobileLoginBtn.addEventListener('click', toggleMenu);
+
+                const contactBtn = mobileMenu.querySelector('a[href="#contact"]');
+                if (contactBtn) {
+                    mobileMenu.insertBefore(mobileLoginBtn, contactBtn);
+                }
+            }
+        }
+
 
         // WORK GALLERY SCROLL
         const workContainer = document.getElementById('workContainer');
@@ -903,6 +1108,77 @@
                         btn.innerText = originalText;
                         btn.disabled = false;
                     }, 3000);
+                }
+            });
+        }
+
+        // --- HERO VIDEO AUDIO LOGIC ---
+        const heroVideo = document.getElementById('heroVideo');
+        const muteToggle = document.getElementById('muteToggle');
+        const muteIcon = document.getElementById('muteIcon');
+        const unmuteIcon = document.getElementById('unmuteIcon');
+        let audioAutoMuted = false;
+
+        if (heroVideo && muteToggle) {
+            // USER REQUEST: Always start unmuted by default
+            heroVideo.muted = false;
+            updateAudioUI();
+
+            // Attempt to play unmuted
+            const playAttempt = heroVideo.play();
+
+            if (playAttempt !== undefined) {
+                playAttempt.then(() => {
+                    console.log("Playback started unmuted successfully.");
+                }).catch(error => {
+                    console.log("Autoplay unmuted blocked. Muting to allow video to run.");
+                    // If blocked, we mute just to get the video moving, but we'll try to unmute on first touch
+                    heroVideo.muted = true;
+                    updateAudioUI();
+                    heroVideo.play();
+                });
+            }
+
+            // Fallback: Unmute on the very first user interaction (click, scroll, key)
+            const forceUnmute = () => {
+                if (audioAutoMuted) return;
+                heroVideo.muted = false;
+                updateAudioUI();
+                // Clean up listeners
+                ['click', 'scroll', 'touchstart', 'keydown'].forEach(evt =>
+                    window.removeEventListener(evt, forceUnmute)
+                );
+            };
+
+            ['click', 'scroll', 'touchstart', 'keydown'].forEach(evt =>
+                window.addEventListener(evt, forceUnmute, { once: true })
+            );
+
+            muteToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                heroVideo.muted = !heroVideo.muted;
+                updateAudioUI();
+            });
+
+            function updateAudioUI() {
+                if (heroVideo.muted) {
+                    muteIcon.classList.remove('hidden');
+                    unmuteIcon.classList.add('hidden');
+                } else {
+                    muteIcon.classList.add('hidden');
+                    unmuteIcon.classList.remove('hidden');
+                }
+            }
+
+            // Session Auto-Mute on Scroll Down
+            window.addEventListener('scroll', () => {
+                if (audioAutoMuted) return;
+                const scrollPos = window.scrollY;
+                const halfScreen = window.innerHeight * 0.5;
+                if (scrollPos > halfScreen && !heroVideo.muted) {
+                    heroVideo.muted = true;
+                    audioAutoMuted = true;
+                    updateAudioUI();
                 }
             });
         }

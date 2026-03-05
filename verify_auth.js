@@ -1,3 +1,4 @@
+require('dotenv').config();
 const http = require('http');
 
 function request(options, data) {
@@ -26,7 +27,7 @@ async function verify() {
     console.log('\n1. Testing Default Login (admin@blackbanana.com)...');
     try {
         let res = await request({
-            hostname: 'localhost', port: 3000, path: '/api/auth/login', method: 'POST',
+            hostname: '127.0.0.1', port: 3000, path: '/api/auth/login', method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         }, { username: 'admin@blackbanana.com', password: 'password123' });
 
@@ -41,9 +42,9 @@ async function verify() {
     console.log('\n2. Testing Registration (newuser@test.com)...');
     try {
         let res = await request({
-            hostname: 'localhost', port: 3000, path: '/api/auth/register', method: 'POST',
+            hostname: '127.0.0.1', port: 3000, path: '/api/auth/register', method: 'POST',
             headers: { 'Content-Type': 'application/json' }
-        }, { username: 'newuser@test.com', password: 'password123', secret: '123123' });
+        }, { username: 'newuser@test.com', password: 'password123', secret: process.env.ADMIN_SECRET });
 
         if (res.status === 200) {
             console.log('✓ Registration Successful');

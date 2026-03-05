@@ -36,6 +36,74 @@
         body {
             background-color: #050505;
             color: #ffffff;
+            overflow: hidden;
+        }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+
+        .loader-b {
+            color: #F59E0B;
+            font-size: 5rem;
+            font-weight: 700;
+            animation: pulse-b 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-b {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        .loader-line {
+            width: 150px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 99px;
+        }
+
+        .loader-line::after {
+            content: '';
+            position: absolute;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #F59E0B;
+            animation: progress-b 2s infinite;
+        }
+
+        @keyframes progress-b {
+            0% {
+                left: -100%;
+            }
+
+            50% {
+                left: 0%;
+            }
+
+            100% {
+                left: 100%;
+            }
         }
 
         /* CUSTOM CLOSE BUTTON ANIMATION */
@@ -89,9 +157,15 @@
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center p-6">
+<body class="min-h-screen flex items-center justify-center p-4">
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="loader-b">B</div>
+        <div class="loader-line"></div>
+    </div>
 
-    <div class="w-full max-w-lg bg-[#0F0F0F] border border-white/10 p-8 md:p-12 rounded-2xl relative overflow-hidden">
+    <div
+        class="w-full max-w-lg bg-[#0F0F0F] border border-white/10 p-8 md:p-12 rounded-2xl relative overflow-hidden shadow-2xl">
 
         <div class="absolute top-0 right-0 w-32 h-32 bg-bb-gold/10 rounded-full blur-[50px]"></div>
 
@@ -123,6 +197,14 @@
                 <input type="text" id="r-role"
                     class="w-full bg-white/5 border border-white/10 p-4 rounded-lg focus:border-bb-gold outline-none text-white transition-colors"
                     required>
+            </div>
+
+            <div>
+                <label class="block text-xs uppercase tracking-widest text-white/40 mb-2">Email
+                </label>
+                <input type="email" id="r-email"
+                    class="w-full bg-white/5 border border-white/10 p-4 rounded-lg focus:border-bb-gold outline-none text-white transition-colors"
+                    placeholder="your@email.com" required>
             </div>
 
             <div>
@@ -158,6 +240,15 @@
 
     <script src="script.js"></script>
     <script>
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                preloader.style.opacity = '0';
+                preloader.style.visibility = 'hidden';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
         async function handleSubmit(e) {
             e.preventDefault();
 
@@ -168,6 +259,7 @@
 
             const name = document.getElementById('r-name').value;
             const role = document.getElementById('r-role').value;
+            const email = document.getElementById('r-email').value;
             const text = document.getElementById('r-text').value;
             const ratingStr = document.querySelector('input[name="rating"]:checked').value;
             const rating = parseInt(ratingStr, 10);
@@ -175,7 +267,7 @@
             try {
                 // Call API
                 await BB_DB.addReview({
-                    name, role, text, rating
+                    name, role, email, text, rating
                 });
 
                 // Success State

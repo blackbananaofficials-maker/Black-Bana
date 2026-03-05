@@ -1,3 +1,4 @@
+require('dotenv').config();
 const http = require('http');
 
 function request(options, data) {
@@ -30,7 +31,7 @@ async function verify() {
         let res = await request({
             hostname: 'localhost', port: 3000, path: '/api/auth/login', method: 'POST',
             headers: { 'Content-Type': 'application/json' }
-        }, { username: 'admin@bb.com', password: 'password' });
+        }, { username: 'admin@blackbanana.com', password: 'password' });
 
         if (res.status !== 200) {
             // Try register if login fails (first run)
@@ -38,14 +39,14 @@ async function verify() {
             res = await request({
                 hostname: 'localhost', port: 3000, path: '/api/auth/register', method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
-            }, { username: 'admin@bb.com', password: 'password', secret: '123123' });
+            }, { username: 'admin@blackbanana.com', password: 'password', secret: process.env.ADMIN_SECRET });
 
             if (res.status === 200) {
                 // Login again
                 res = await request({
                     hostname: 'localhost', port: 3000, path: '/api/auth/login', method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
-                }, { username: 'admin@bb.com', password: 'password' });
+                }, { username: 'admin@blackbanana.com', password: 'password' });
             }
         }
 
@@ -76,12 +77,13 @@ async function verify() {
 
     // 3. Delete Expertise (Cleanup)
     console.log('\n3. Testing DELETE /api/expertise...');
-    // Find index
+    // Find item to delete by matching title
     const list = res.body;
-    const idx = list.findIndex(e => e.title === 'Test Service');
-    if (idx !== -1) {
+    const itemToDelete = list.find(e => e.title === 'Test Service');
+
+    if (itemToDelete && itemToDelete.id) {
         res = await request({
-            hostname: 'localhost', port: 3000, path: `/api/expertise/${idx}`, method: 'DELETE',
+            hostname: 'localhost', port: 3000, path: `/api/expertise/${itemToDelete.id}`, method: 'DELETE',
             headers: authHeader
         });
         if (res.status === 200 && !res.body.find(e => e.title === 'Test Service')) {
@@ -89,6 +91,8 @@ async function verify() {
         } else {
             console.error('✗ Failed to delete expertise', res.body);
         }
+    } else {
+        console.error('✗ Item not found to delete');
     }
 
     // 4. Contact Form

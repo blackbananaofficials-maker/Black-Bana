@@ -23,6 +23,10 @@
     {
       "username": "mayankprajapat010@gmail.com",
       "password": "123123"
+    },
+    {
+      "username": "24se02ml123@ppsu.ac.in",
+      "password": "24se02ml123"
     }
   ],
   "projects": [
@@ -92,6 +96,14 @@
     }
   ],
   "messages": [
+    {
+      "id": 1772452102467,
+      "name": "__Mayank__",
+      "email": "mayankprajapat010@gmail.com",
+      "company": "TechverseHUb",
+      "message": "asgfdjbaskjnx",
+      "date": "2026-03-02T11:48:22.467Z"
+    },
     {
       "id": 1771044930338,
       "name": "Test User",

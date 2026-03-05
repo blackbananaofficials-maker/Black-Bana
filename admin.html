@@ -40,7 +40,74 @@
         body {
             background-color: #050505;
             color: #ffffff;
-            overflow-x: hidden;
+            overflow: hidden;
+        }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+
+        .loader-b {
+            color: #F59E0B;
+            font-size: 5rem;
+            font-weight: 700;
+            animation: pulse-b 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-b {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        .loader-line {
+            width: 150px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 99px;
+        }
+
+        .loader-line::after {
+            content: '';
+            position: absolute;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #F59E0B;
+            animation: progress-b 2s infinite;
+        }
+
+        @keyframes progress-b {
+            0% {
+                left: -100%;
+            }
+
+            50% {
+                left: 0%;
+            }
+
+            100% {
+                left: 100%;
+            }
         }
 
         .reactor-card {
@@ -121,6 +188,11 @@
 </head>
 
 <body class="antialiased selection:bg-bb-gold selection:text-bb-black min-h-screen flex flex-col">
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="loader-b">B</div>
+        <div class="loader-line"></div>
+    </div>
 
     <!-- NAV -->
     <nav
@@ -150,7 +222,7 @@
         <div class="mb-12 flex justify-between items-end">
             <div>
                 <h1 class="text-4xl md:text-5xl font-bold uppercase mb-2">Dashboard</h1>
-                <p class="text-white/40 font-body">Welcome back, Administrator.</p>
+                <p id="admin-welcome-text" class="text-white/40 font-body">Welcome back, Administrator.</p>
             </div>
             <div class="flex gap-4">
                 <button onclick="openModal('project')"
@@ -374,6 +446,11 @@
             // AUTH CHECK
             BB_DB.checkAuth();
 
+            const username = localStorage.getItem('bb_auth_username');
+            if (username) {
+                document.getElementById('admin-welcome-text').innerText = `Welcome back, ${username.split('@')[0]}.`;
+            }
+
             const projects = await BB_DB.getProjects();
             const reviews = await BB_DB.getReviews();
             const expertise = await BB_DB.getExpertise();
@@ -387,15 +464,23 @@
             const reviewContainer = document.getElementById('reviews-list');
             reviewContainer.innerHTML = reviews.map((r, idx) => `
                 <div class="p-4 bg-white/5 rounded-lg border border-white/5 group hover:border-bb-gold transition-colors relative">
-                    <button onclick="deleteReview(${idx})" class="absolute top-4 right-4 text-white/20 hover:text-red-500 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                    <div class="flex justify-between items-start mb-2 pr-8">
+                    <div class="absolute top-4 right-4 flex gap-2">
+                        <button onclick="toggleFeature('${r.id}', ${r.is_featured})" 
+                            class="p-1 rounded transition-colors ${r.is_featured ? 'text-bb-gold bg-bb-gold/10' : 'text-white/20 hover:text-bb-gold'} "
+                            title="${r.is_featured ? 'Unfeature' : 'Feature on Homepage'}">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        </button>
+                        <button onclick="deleteReview('${r.id || idx}')" class="text-white/20 hover:text-red-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-start mb-2 pr-20">
                         <div class="font-bold text-white">${r.name}</div>
                         <div class="text-bb-gold text-xs">★ ${r.rating}</div>
                     </div>
-                    <div class="text-white/40 text-xs mb-2">${r.role}</div>
-                    <p class="text-white/70 text-sm">"${r.text}"</p>
+                    <div class="text-white/40 text-xs mb-1">${r.role}</div>
+                    <div class="text-white/20 text-[10px] mb-2 truncate">${r.email || 'No email'}</div>
+                    <p class="text-white/70 text-sm italic">"${r.text}"</p>
                 </div>
             `).join('');
 
@@ -409,7 +494,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                          <div class="text-xs px-2 py-1 bg-bb-gold/10 text-bb-gold rounded">Active</div>
-                         <button onclick="deleteProject(${idx})" class="text-white/20 hover:text-red-500 transition-colors">
+                         <button onclick="deleteProject('${p.id || idx}')" class="text-white/20 hover:text-red-500 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
@@ -427,7 +512,7 @@
                             <div class="text-xs text-white/40 truncate max-w-[150px]">${e.desc}</div>
                         </div>
                     </div>
-                    <button onclick="deleteExpertise(${idx})" class="text-white/20 hover:text-red-500 transition-colors">
+                    <button onclick="deleteExpertise('${e.id || idx}')" class="text-white/20 hover:text-red-500 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
@@ -447,6 +532,16 @@
                 await BB_DB.deleteReview(index);
                 renderAdmin();
                 showNotification('Review deleted successfully', 'deleted');
+            }
+        }
+
+        async function toggleFeature(id, currentStatus) {
+            try {
+                await BB_DB.toggleReviewFeature(id, !currentStatus);
+                renderAdmin();
+                showNotification(currentStatus ? 'Review unfeatured' : 'Review featured on homepage', 'success');
+            } catch (err) {
+                showNotification('Error toggling feature status', 'error');
             }
         }
 
@@ -520,7 +615,16 @@
         }
 
         // Init
-        window.addEventListener('load', renderAdmin);
+        window.addEventListener('load', () => {
+            renderAdmin();
+            // Hide Preloader
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                preloader.style.opacity = '0';
+                preloader.style.visibility = 'hidden';
+                document.body.style.overflow = 'auto';
+            }
+        });
 
     </script>
 
