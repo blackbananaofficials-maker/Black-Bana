@@ -11,9 +11,9 @@ export default function Home() {
         <>
             <Hero />
             <InfiniteTicker />
-            <Method />
-            <Expertise />
             <Projects />
+            <Expertise />
+            <Method />
             <Reviews />
             <ContactForm />
         </>

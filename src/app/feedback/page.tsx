@@ -50,10 +50,9 @@ const FeedbackPage = () => {
             <div className="w-full max-w-lg bg-bb-charcoal border border-white/10 p-8 md:p-12 rounded-2xl relative overflow-hidden shadow-xl">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-bb-gold/10 rounded-full blur-[50px]"></div>
 
-                {/* Animated Close Button */}
-                <Link href="/" className="line-to-cross absolute top-6 right-6 group">
-                    <div className="line line-1"></div>
-                    <div className="line line-2"></div>
+                {/* Back Button */}
+                <Link href="/" className="absolute top-6 left-6 md:top-8 md:left-8 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white border border-white/10 hover:border-white/30 rounded-full transition-all flex items-center gap-2 z-50 bg-[#0a0a0a]">
+                    <span>← Back</span>
                 </Link>
 
                 <div className="mb-8 text-center pt-4">

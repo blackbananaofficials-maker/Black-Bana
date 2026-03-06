@@ -4,7 +4,141 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api, Project, Review, Expertise, MethodStep } from '@/lib/api';
 
+// ─── Auth Gate ──────────────────────────────────────────────────────────────
+// Rendered whenever there is no valid session token in localStorage.
+const AuthGate = ({ onAuthed }: { onAuthed: () => void }) => {
+    const [mode, setMode] = useState<'login' | 'signup'>('login');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [secret, setSecret] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            if (mode === 'login') {
+                await api.login(username, password);
+            } else {
+                await api.register(username, password, secret);
+                // Auto-login after signup
+                await api.login(username, password);
+            }
+            onAuthed();
+        } catch (err: any) {
+            setError(err.message || 'Authentication failed. Check your credentials.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[#050505] flex items-center justify-center px-4">
+            {/* Ambient glow */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#F59E0B]/5 rounded-full blur-[120px]" />
+            </div>
+
+            <div className="relative w-full max-w-md">
+                <div className="text-center mb-10 relative">
+                    <Link href="/" className="absolute -top-4 -left-4 md:-left-12 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white border border-white/10 hover:border-white/30 rounded-full transition-all flex items-center gap-2">
+                        <span>← Back</span>
+                    </Link>
+                    <img src="/Black Banana.svg" alt="Black Banana" className="h-10 mx-auto mb-4" />
+                    <span className="px-3 py-1 bg-[#F59E0B]/10 border border-[#F59E0B] text-[#F59E0B] text-[10px] font-bold uppercase tracking-widest rounded-full">
+                        Admin Console
+                    </span>
+                </div>
+
+                {/* Card */}
+                <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 shadow-2xl">
+                    {/* Tab switcher */}
+                    <div className="flex mb-8 border border-white/10 rounded-lg p-1">
+                        <button
+                            onClick={() => { setMode('login'); setError(''); }}
+                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-widest rounded-md transition-all ${mode === 'login' ? 'bg-[#F59E0B] text-black' : 'text-white/40 hover:text-white'
+                                }`}
+                        >
+                            Login
+                        </button>
+                        <button
+                            onClick={() => { setMode('signup'); setError(''); }}
+                            className={`flex-1 py-2 text-xs font-bold uppercase tracking-widest rounded-md transition-all ${mode === 'signup' ? 'bg-[#F59E0B] text-black' : 'text-white/40 hover:text-white'
+                                }`}
+                        >
+                            New Admin
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Username</label>
+                            <input
+                                type="text"
+                                required
+                                autoComplete="username"
+                                value={username}
+                                onChange={e => setUsername(e.target.value)}
+                                placeholder="admin"
+                                className="w-full bg-white/5 border border-white/10 focus:border-[#F59E0B] outline-none rounded-lg px-4 py-3 text-white placeholder-white/20 transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Password</label>
+                            <input
+                                type="password"
+                                required
+                                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="w-full bg-white/5 border border-white/10 focus:border-[#F59E0B] outline-none rounded-lg px-4 py-3 text-white placeholder-white/20 transition-colors"
+                            />
+                        </div>
+                        {mode === 'signup' && (
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Admin Secret Key</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={secret}
+                                    onChange={e => setSecret(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full bg-white/5 border border-white/10 focus:border-[#F59E0B] outline-none rounded-lg px-4 py-3 text-white placeholder-white/20 transition-colors"
+                                />
+                                <p className="mt-2 text-[10px] text-white/30">Secret key is required to create new admin accounts.</p>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div className="p-3 border border-red-500/30 bg-red-500/10 rounded-lg text-red-400 text-xs font-medium">
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-3 bg-[#F59E0B] text-black font-bold uppercase tracking-widest rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                        >
+                            {loading ? '...' : mode === 'login' ? 'Enter Console' : 'Create Account'}
+                        </button>
+                    </form>
+                </div>
+
+                <p className="text-center text-white/20 text-[10px] mt-6 uppercase tracking-widest">
+                    Black Banana Officials — Admin Only
+                </p>
+            </div>
+        </div>
+    );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const AdminPage = () => {
+    const [isAuthed, setIsAuthed] = useState<boolean | null>(null); // null = loading
     const [stats, setStats] = useState({ projects: 0, reviews: 0, expertise: 0, companies: 0, methods: 0 });
     const [projects, setProjects] = useState<Project[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -30,7 +164,16 @@ const AdminPage = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // ── Auth check on mount ──
     useEffect(() => {
+        const token = localStorage.getItem('bb_auth_token');
+        setIsAuthed(!!token);
+    }, []);
+
+
+    // ── Data loading — only when authenticated ──
+    useEffect(() => {
+        if (!isAuthed) return;
         const loadData = async () => {
             const [projData, revData, expData, compData, methData] = await Promise.all([
                 api.getProjects(),
@@ -53,7 +196,14 @@ const AdminPage = () => {
             });
         };
         loadData();
-    }, []);
+    }, [isAuthed]);
+
+    // ── Logout clears state ──
+    const handleLogout = () => {
+        localStorage.removeItem('bb_auth_token');
+        localStorage.removeItem('bb_auth_username');
+        setIsAuthed(false);
+    };
 
     const showNotification = (msg: string, type: 'success' | 'deleted' | 'error' = 'success') => {
         const id = Date.now();
@@ -122,6 +272,20 @@ const AdminPage = () => {
         }
     };
 
+    // ── Render: loading ──
+    if (isAuthed === null) {
+        return (
+            <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-[#F59E0B] border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    // ── Render: not logged in → show auth gate ──
+    if (!isAuthed) {
+        return <AuthGate onAuthed={() => setIsAuthed(true)} />;
+    }
+
     return (
         <div className="min-h-screen bg-bb-black text-white selection:bg-bb-gold selection:text-bb-black font-sans">
             {/* NAV */}
@@ -136,7 +300,7 @@ const AdminPage = () => {
                 </div>
                 <div className="flex gap-4 items-center">
                     <button
-                        onClick={() => api.logout()}
+                        onClick={handleLogout}
                         className="hidden md:block text-white/40 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
                     >
                         Logout
@@ -343,13 +507,22 @@ const AdminPage = () => {
                                     <input type="text" placeholder="Footer Text" className="w-full bg-white/5 border border-white/10 p-3 rounded text-white focus:border-bb-gold outline-none" value={formData.footer} onChange={e => setFormData({ ...formData, footer: e.target.value })} />
                                 </>
                             )}
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full py-3 bg-bb-gold text-black font-bold uppercase rounded hover:bg-white transition-colors disabled:opacity-50"
-                            >
-                                {isSubmitting ? 'Adding...' : `Add ${modalType.toUpperCase()}`}
-                            </button>
+                            <div className="flex gap-4 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="w-full py-3 bg-white/5 border border-white/10 text-white font-bold uppercase rounded hover:bg-white/10 hover:border-white/30 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full py-3 bg-bb-gold text-black font-bold uppercase rounded hover:bg-white transition-colors disabled:opacity-50"
+                                >
+                                    {isSubmitting ? 'Adding...' : `Add ${modalType}`}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

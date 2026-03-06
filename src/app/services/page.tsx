@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { api, Expertise as ExpertiseItem } from '@/lib/api';
 
 const ServicesPage = () => {
@@ -16,7 +17,14 @@ const ServicesPage = () => {
 
     return (
         <main className="pt-32 pb-24 bg-bb-black font-sans min-h-screen">
-            <div className="container mx-auto px-6 mb-24 text-center">
+            {/* Back Button */}
+            <div className="absolute top-8 left-6 md:left-12 z-50">
+                <Link href="/" className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white border border-white/10 hover:border-white/30 rounded-full transition-all flex items-center gap-2 bg-[#050505]/50 backdrop-blur-md">
+                    <span>← Back</span>
+                </Link>
+            </div>
+
+            <div className="container mx-auto px-6 mb-24 text-center mt-8">
                 <h1 className="text-[8vw] md:text-6xl font-bold uppercase leading-none mb-6">Our <span className="text-bb-gold">Services</span></h1>
                 <p className="text-white/40 max-w-2xl mx-auto font-body text-lg">Comprehensive digital solutions engineered for growth, visibility, and dominance. (Next.js Version)</p>
             </div>

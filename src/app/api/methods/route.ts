@@ -1,17 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getCollection, supabase, getLocalDB, saveLocalDB } from '@/lib/db';
+import { requireAuth, safeErrorResponse } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET() {
     try {
         const data = await getCollection('methods');
         return NextResponse.json(data);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return safeErrorResponse(error);
     }
 }
 
 export async function POST(req: Request) {
+    const authResult = requireAuth(req);
+    if (authResult) return authResult.error;
+
     try {
         const body = await req.json();
         if (supabase) {
@@ -26,25 +30,27 @@ export async function POST(req: Request) {
             saveLocalDB(db);
             return NextResponse.json(newItem);
         }
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return safeErrorResponse(error);
     }
 }
 
 export async function DELETE(req: Request) {
+    const authResult = requireAuth(req);
+    if (authResult) return authResult.error;
+
     try {
         const { id } = await req.json();
         if (supabase) {
             const { error } = await supabase.from('methods').delete().eq('id', id);
             if (error) throw error;
-            return NextResponse.json({ success: true });
         } else {
             const db = getLocalDB();
             db.methods = db.methods.filter((m: any) => m.id !== id);
             saveLocalDB(db);
-            return NextResponse.json({ success: true });
         }
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        return safeErrorResponse(error);
     }
 }

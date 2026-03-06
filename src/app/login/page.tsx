@@ -58,12 +58,9 @@ const LoginPage = () => {
             <div className="w-full max-w-md bg-bb-charcoal border border-white/10 p-10 rounded-2xl relative overflow-hidden shadow-2xl">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-bb-gold/10 rounded-full blur-[50px]"></div>
 
-                <Link
-                    href="/"
-                    className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center group z-50 transition-all"
-                >
-                    <div className="w-6 h-0.5 bg-white/40 absolute transition-all duration-300 group-hover:rotate-45 group-hover:bg-bb-gold"></div>
-                    <div className="w-6 h-0.5 bg-bb-gold absolute transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:-rotate-45"></div>
+                {/* Back Button */}
+                <Link href="/" className="absolute top-6 left-6 md:top-8 md:left-8 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white border border-white/10 hover:border-white/30 rounded-full transition-all flex items-center gap-2 z-50 bg-[#0a0a0a]">
+                    <span>← Back</span>
                 </Link>
 
                 <div className="text-center mb-8 pt-4">

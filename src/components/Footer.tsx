@@ -12,12 +12,10 @@ const Footer = () => {
                         We don't just build websites; we build digital empires.
                     </p>
                     <div className="flex gap-4">
-                        <Link href="#"
+                        <Link href="https://www.instagram.com/blackbanana.in?igsh=NHE4a3dxczg2OTRm" target="_blank" rel="noopener noreferrer"
                             className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center hover:bg-white hover:text-black transition-colors">IG</Link>
-                        <Link href="#"
+                        <Link href="https://www.linkedin.com/company/black-banana/" target="_blank" rel="noopener noreferrer"
                             className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center hover:bg-white hover:text-black transition-colors">LN</Link>
-                        <Link href="#"
-                            className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center hover:bg-white hover:text-black transition-colors">YT</Link>
                     </div>
                 </div>
                 <div>

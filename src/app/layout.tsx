@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Preloader from "@/components/Preloader";
 import GlobalLoader from "@/components/GlobalLoader";
 
@@ -15,6 +13,8 @@ const inter = Inter({
     subsets: ["latin"],
     variable: "--font-inter",
 });
+
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 export const metadata: Metadata = {
     title: "BLACK BANANA | Digital Empire",
@@ -30,9 +30,7 @@ export default function RootLayout({
         <html lang="en" className="dark">
             <body className={`${spaceGrotesk.variable} ${inter.variable} antialiased selection:bg-bb-gold selection:text-bb-black bg-bb-black text-white`}>
                 <Preloader />
-                <Navbar />
-                <main>{children}</main>
-                <Footer />
+                <LayoutWrapper>{children}</LayoutWrapper>
             </body>
         </html>
     );
