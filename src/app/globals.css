@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bb-black: #050505;
+  --color-bb-gold: #F59E0B;
+  --color-bb-charcoal: #0F0F0F;
+  --color-bb-glass: rgba(255, 255, 255, 0.05);
+
+  --font-sans: var(--font-space-grotesk), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
+
+  --animate-infinite-scroll: infinite-scroll 25s linear infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes infinite-scroll {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-100%);
+    }
+  }
+}
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 5, 5, 5;
+  --background-end-rgb: 5, 5, 5;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-start-rgb));
+  overflow-x: hidden;
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+
+/* Premium Animated Button: Line to Cross */
+.line-to-cross {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 32px;
+  height: 32px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50;
+}
+
+.line-to-cross .line {
+  position: absolute;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.line-to-cross .line-1 {
+  width: 20px;
+  transform: rotate(0);
+}
+
+.line-to-cross .line-2 {
+  width: 0;
+  opacity: 0;
+  transform: rotate(0);
+  background-color: #F59E0B;
+}
+
+.line-to-cross:hover .line-1 {
+  width: 24px;
+  transform: rotate(45deg);
+  background-color: #F59E0B;
+}
+
+.line-to-cross:hover .line-2 {
+  width: 24px;
+  opacity: 1;
+  transform: rotate(-45deg);
+}
+
+/* Premium Animated Button: Line to Arrow */
+.line-to-arrow {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.line-to-arrow .main-line {
+  width: 32px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.line-to-arrow .arrow-head {
+  position: absolute;
+  right: 8px;
+  width: 12px;
+  height: 2px;
+  background-color: #F59E0B;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: right;
+}
+
+.line-to-arrow .head-top {
+  transform: rotate(0);
+}
+
+.line-to-arrow .head-bottom {
+  transform: rotate(0);
+}
+
+.line-to-arrow:hover .main-line {
+  width: 40px;
+  background-color: #F59E0B;
+}
+
+.line-to-arrow:hover .arrow-head {
+  opacity: 1;
+}
+
+.line-to-arrow:hover .head-top {
+  transform: rotate(45deg);
+}
+
+.line-to-arrow:hover .head-bottom {
+  transform: rotate(-45deg);
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.text-stroke-white {
+  -webkit-text-stroke: 1px white;
+}
+
+/* Custom styles from original */
+.cyber-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+.cyber-pill.active {
+  background: #F59E0B;
+  color: black;
+  border-color: #F59E0B;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.reactor-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.video-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  z-index: -1;
+}
+
+/* Ensure global SVG logo sizing constraints */
+img[src*="Black Banana.svg"] {
+  max-height: 48px;
+  /* Typical navbar logo height */
+  width: auto;
+  object-fit: contain;
+}
