@@ -6,17 +6,19 @@ import xss from 'xss';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name, email, company, message } = body;
+        const { name, email, phone, company, message } = body;
 
         // Sanitize inputs
         const cleanName = xss(name);
         const cleanEmail = xss(email);
+        const cleanPhone = xss(phone || '');
         const cleanCompany = xss(company || 'Direct');
         const cleanMessage = xss(message);
 
         const messageInfo = {
             name: cleanName,
             email: cleanEmail,
+            phone: cleanPhone,
             company: cleanCompany,
             message: cleanMessage,
             created_at: new Date().toISOString()
@@ -70,7 +72,9 @@ export async function POST(req: Request) {
                             
                             <div style="margin-bottom: 20px;">
                                 <label style="color: #F59E0B; text-transform: uppercase; font-size: 11px; font-weight: bold; letter-spacing: 1px;">Direct Contact</label>
-                                <p style="margin: 5px 0 0 0; font-size: 16px; color: #fff; font-style: italic;">${cleanEmail}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 16px; color: #fff; font-style: italic;">
+                                    ${cleanEmail} ${cleanPhone ? `| ${cleanPhone}` : ''}
+                                </p>
                             </div>
                             
                             <div style="border-top: 1px solid #222; padding-top: 20px; margin-top: 10px;">

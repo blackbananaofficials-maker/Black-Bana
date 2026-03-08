@@ -7,6 +7,7 @@ const ContactForm = () => {
     const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
     const [formData, setFormData] = useState({
         name: '',
+        phone: '',
         email: '',
         company: '',
         message: ''
@@ -19,7 +20,7 @@ const ContactForm = () => {
         try {
             await api.submitContact(formData);
             setStatus('sent');
-            setFormData({ name: '', email: '', company: '', message: '' });
+            setFormData({ name: '', phone: '', email: '', company: '', message: '' });
             setTimeout(() => setStatus('idle'), 3000);
         } catch (err) {
             console.error(err);
@@ -61,6 +62,17 @@ const ContactForm = () => {
                                 required
                             />
                             <input
+                                type="tel"
+                                id="c-phone"
+                                placeholder="Phone Number"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                className="bg-white/5 border border-white/10 p-4 rounded-lg focus:border-[#F59E0B] outline-none text-white hover-trigger w-full"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input
                                 type="email"
                                 id="c-email"
                                 placeholder="Email"
@@ -69,15 +81,15 @@ const ContactForm = () => {
                                 className="bg-white/5 border border-white/10 p-4 rounded-lg focus:border-[#F59E0B] outline-none text-white hover-trigger w-full"
                                 required
                             />
+                            <input
+                                type="text"
+                                id="c-company"
+                                placeholder="Company / Brand"
+                                value={formData.company}
+                                onChange={handleChange}
+                                className="w-full bg-white/5 border border-white/10 p-4 rounded-lg focus:border-[#F59E0B] outline-none text-white hover-trigger"
+                            />
                         </div>
-                        <input
-                            type="text"
-                            id="c-company"
-                            placeholder="Company / Brand"
-                            value={formData.company}
-                            onChange={handleChange}
-                            className="w-full bg-white/5 border border-white/10 p-4 rounded-lg focus:border-[#F59E0B] outline-none text-white hover-trigger"
-                        />
                         <textarea
                             id="c-message"
                             rows={4}
