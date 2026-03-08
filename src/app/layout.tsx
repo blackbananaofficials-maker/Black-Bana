@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Preloader from "@/components/Preloader";
 import GlobalLoader from "@/components/GlobalLoader";
@@ -31,6 +32,16 @@ export default function RootLayout({
             <body className={`${spaceGrotesk.variable} ${inter.variable} antialiased selection:bg-bb-gold selection:text-bb-black bg-bb-black text-white`}>
                 <Preloader />
                 <LayoutWrapper>{children}</LayoutWrapper>
+                <Script src="https://www.googletagmanager.com/gtag/js?id=G-3NV49PY4MS" strategy="afterInteractive" />
+                <Script id="google-analytics" strategy="afterInteractive">
+                    {`
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+
+                        gtag('config', 'G-3NV49PY4MS');
+                    `}
+                </Script>
             </body>
         </html>
     );
